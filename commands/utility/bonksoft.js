@@ -61,12 +61,10 @@ module.exports = {
 		// Get target member
 		const targetMember = await interaction.guild.members.fetch(target.id);
 		
-		// Check if target has admin permissions
-		if (targetMember.permissions.has(['Administrator']) || 
-		    targetMember.permissions.has(['ManageGuild']) || 
-		    targetMember.permissions.has(['ManageRoles'])) {
+		// Check if target is server owner or has admin permissions
+		if (targetMember.permissions.has(['Administrator']) || targetMember.id === interaction.guild.ownerId) {
 			return await interaction.reply({ 
-				content: `🛡️ ${target.displayName} has administrative permissions and cannot be bonked!`,
+				content: `🛡️ ${target.displayName} has administrator permissions or is the server owner and cannot be bonked!`,
 				ephemeral: true 
 			});
 		}

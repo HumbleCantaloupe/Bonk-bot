@@ -45,7 +45,7 @@ module.exports = {
 				},
 				{
 					name: '📋 Commands',
-					value: '`/bonk @user` - Bonk a user (10 min jail, 1 coin)\n`/bonkmega @user` - Mega bonk (15 min jail, 2 coins)\n`/bonksoft @user` - Soft bonk (5 min jail, 1 coin)\n`/bonkbalance [user]` - Check bonk coins\n`/bonkclaim` - Daily coin claim\n`/bonkgamble <amount>` - Gamble coins\n`/bonkgift @user <amount>` - Gift coins\n`/bonkshop` - Browse, buy, and use power-ups\n`/bonkstats [user]` - View stats\n`/bonkhelp` - This help message',
+					value: '`/bonk @user` - Bonk a user (10 min jail, 1 coin)\n`/bonkmega @user` - Mega bonk (15 min jail, 2 coins)\n`/bonksoft @user` - Soft bonk (5 min jail, 1 coin)\n`/bonkbalance [user]` - Check bonk coins\n`/bonkclaim` - Daily coin claim\n`/bonkgamble <amount>` - Gamble coins\n`/bonkgift @user <amount>` - Gift coins\n`/bonkshop` - Browse, buy, and use power-ups\n`/bonkstats [user]` - View stats\n`/bonkpanic` - 🚨 Emergency: Release all jailed users (Admin only)\n`/bonkhelp` - This help message',
 					inline: false
 				},
 				{
@@ -55,7 +55,7 @@ module.exports = {
 				},
 				{
 					name: '⚖️ Rules',
-					value: '• You cannot bonk yourself, bots, or admins\n• Users already in jail cannot be bonked again\n• All bonk variants cost coins (1-2 coins each)\n• Jails are public - everyone can see and chat\n• Admins with Administrator/ManageGuild/ManageRoles are protected',
+					value: '• You cannot bonk yourself, bots, server owner, or admins\n• Users already in jail cannot be bonked again\n• All bonk variants cost coins (1-2 coins each)\n• Jails are public - everyone can see and chat\n• Server owner and users with Administrator permission are protected',
 					inline: false
 				},
 				{

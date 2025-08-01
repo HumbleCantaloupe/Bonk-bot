@@ -64,12 +64,10 @@ module.exports = {
 			});
 		}
 
-		// Can't bonk admins
-		if (targetMember.permissions.has(['Administrator']) || 
-		    targetMember.permissions.has(['ManageGuild']) || 
-		    targetMember.permissions.has(['ManageRoles'])) {
+		// Can't bonk server owner or admins
+		if (targetMember.permissions.has(['Administrator']) || targetMember.id === interaction.guild.ownerId) {
 			return await interaction.editReply({ 
-				content: `🛡️ ${target.displayName} has administrative permissions and cannot be bonked!`,
+				content: `🛡️ ${target.displayName} has administrator permissions or is the server owner and cannot be bonked!`,
 			});
 		}
 
