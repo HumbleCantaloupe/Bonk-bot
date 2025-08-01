@@ -19,15 +19,15 @@
     "enableJailChannelChat": true
   },
   "economySettings": {
-    "startingCoins": 3,
+    "startingCoins": 10,
     "dailyRewards": [
-      { "day": 1, "coins": 3 },
-      { "day": 2, "coins": 3 },
-      { "day": 3, "coins": 4 },
-      { "day": 4, "coins": 4 },
-      { "day": 5, "coins": 5 },
-      { "day": 6, "coins": 5 },
-      { "day": 7, "coins": 6 }
+      { "day": 1, "coins": 8 },
+      { "day": 2, "coins": 10 },
+      { "day": 3, "coins": 12 },
+      { "day": 4, "coins": 14 },
+      { "day": 5, "coins": 16 },
+      { "day": 6, "coins": 18 },
+      { "day": 7, "coins": 20 }
     ],
     "bonkCosts": {
       "soft": 1,

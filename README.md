@@ -1,6 +1,6 @@
 # 🔨 Discord Bonk Bot
 
-> A comprehensive Discord bot for sending friends to horny jail with style and chaos
+> A Discord bot for sending friends to horny jail with style and chaos
 
 [![Discord.js](https://img.shields.io/badge/discord.js-v14.21.0-blue.svg)](https://discord.js.org/)
 [![Node.js](https://img.shields.io/badge/node.js-v18+-green.svg)](https://nodejs.org/)
@@ -9,7 +9,7 @@
 
 ## 🎯 What is Bonk Bot?
 
-A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Send your friends to **individual horny jail channels** where everyone can watch their shame unfold. Complete with a robust economy system, defensive power-ups, emergency management tools, and full configuration customization.
+A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Send your friends to **individual horny jail channels** where everyone can watch their shame unfold. Complete with an economy system, defensive power-ups, emergency management tools, and full configuration customization.
 
 <div align="center">
 
@@ -28,7 +28,7 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
 - `/bonkhelp` - Complete command guide with examples
 
 ### Economy Commands
-- `/bonkclaim` - Claim daily coins (3-6 coins with streak bonuses)
+- `/bonkclaim` - Claim daily coins (8-20 coins with streak bonuses)
 - `/bonkbalance` - Check your coin balance and statistics
 - `/bonkgift @user amount` - Gift coins to friends (spread the wealth)
 - `/bonkgamble amount` - Risk coins for rewards (configurable odds)
@@ -43,7 +43,7 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
 - **Crash Protection** - Smart startup recovery prevents permanent jail situations
 
 ### 💰 **Complete Economy System**
-- **Daily Coin Claims** - Earn 3-6 coins daily with consecutive login streak bonuses
+- **Daily Coin Claims** - Earn 8-20 coins daily with consecutive login streak bonuses
 - **Coin Gifting** - Share wealth with friends (or bribe potential victims)
 - **Advanced Gambling** - Risk it all for big rewards with configurable odds
 - **Power-Up Shop** - 7 unique defensive and offensive items
@@ -111,7 +111,7 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
        "jailTimes": { "soft": 5, "regular": 10, "mega": 15 }
      },
      "economySettings": {
-       "startingCoins": 3
+       "startingCoins": 10
      }
      // ... and much more!
    }
@@ -177,8 +177,8 @@ The `bot-config.json` file provides extensive customization options:
     "jailTimes": { "soft": 5, "regular": 10, "mega": 15 }
   },
   "economySettings": {
-    "startingCoins": 3,
-    "dailyRewards": [3, 3, 4, 4, 5, 5, 6]
+    "startingCoins": 10,
+    "dailyRewards": [8, 10, 12, 14, 16, 18, 20]
   },
   "moderationSettings": {
     "adminImmunity": true,
