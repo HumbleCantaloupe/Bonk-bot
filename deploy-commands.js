@@ -1,3 +1,20 @@
+/**
+ * @file deploy-commands.js
+ * @description Command deployment script for registering slash commands with Discord
+ * @author Marrow
+ * @created 2024-07-31
+ * @lastModified 2024-08-01
+ * @version 1.2.0
+ * 
+ * @changelog
+ * - 1.2.0 (2024-08-01): Streamlined deployment process, removed excessive comments
+ * - 1.1.0 (2024-07-31): Added support for nested command folders
+ * - 1.0.0 (2024-07-31): Initial deployment script for slash commands
+ * 
+ * @dependencies discord.js, node:fs, node:path
+ * @permissions None required (script only)
+ */
+
 const { REST, Routes } = require('discord.js');
 const { clientId, guildId, token } = require('./config.json');
 const fs = require('node:fs');
