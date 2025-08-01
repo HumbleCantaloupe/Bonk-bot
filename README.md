@@ -23,9 +23,8 @@
 
 A feature-rich Discord bot originally created for the chaotic **Muskulhige Hiya** server. Send your friends to **individual horny jail channels** where everyone can watch their shame unfold. Complete with a robust economy system, defensive power-ups, emergency management tools, and full configuration customization.
 
-<div align="center">
+
 ![Bonk Demo](https://c.tenor.com/DuN47QciYfsAAAAC/tenor.gif)
-</div>
 
 ---
 
