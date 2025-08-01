@@ -27,7 +27,7 @@ A fun Discord bot created for the chaotic **Muskulhige Hiya** server (where appa
 - **Daily Coin Claims** - Earn 3-6 coins daily with streak bonuses
 - **Coin Gifting** - Share wealth with friends (or enemies)
 - **Gambling** - Risk it all for big rewards
-- **Power-Up Shop** - 6 unique items to enhance your bonking experience
+- **Power-Up Shop** - 7 unique items to enhance your bonking experience
 
 ### 🛡️ **Power-Ups Available**
 | Power-Up | Price | Effect |
@@ -38,6 +38,7 @@ A fun Discord bot created for the chaotic **Muskulhige Hiya** server (where appa
 | 🗝️ **Parole Pass** | 40 coins | Next jail sentence reduced by 50% |
 | ⚡ **Bonk Power Boost** | 35 coins | Next bonk jails target for double time |
 | 🍀 **Lucky Charm** | 45 coins | Next gamble has +20% better odds |
+| 🪞 **Bonk Reflect** | 55 coins | Next bonk attempt bounces back to attacker |
 
 ### 📊 **Statistics & Events**
 - **Comprehensive Stats** - Track bonks given/received, jail time, streaks

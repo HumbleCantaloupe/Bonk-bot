@@ -103,6 +103,33 @@ module.exports = {
 			});
 		}
 
+		// Reflect power-up bounces the bonk back
+		if (targetData.activeEffects && targetData.activeEffects.reflectActive) {
+			targetData.activeEffects.reflectActive = false;
+			
+			// The mega bonk bounces back to the bonker
+			if (!bonkerData.isInJail) {
+				const bonkerMember = await interaction.guild.members.fetch(bonker.id);
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				
+				if (jailRole) {
+					bonkerData.isInJail = true;
+					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.mega || 15) * 60 * 1000);
+					await bonkerMember.roles.set([jailRole.id], 'Mega bonk reflected back!');
+				}
+			}
+			
+			bonkerData.bonkCoins -= 2; // Mega bonk costs 2 coins
+			targetData.totalBonksReceived++; // They still "received" the bonk technically
+			bonkerData.totalBonksGiven++; // But it backfired
+			interaction.client.saveData();
+			
+			return await interaction.reply({ 
+				content: `🪞 **MEGA BONK REFLECTED!** 🪞\n${target.displayName}'s mirror deflected the MEGA bonk back at ${bonker}! The bonker gets the full 15-minute sentence!`,
+				ephemeral: false
+			});
+		}
+
 		// Bonk roulette event
 		if (interaction.client.specialEvents.bonkRoulette && Math.random() < 0.2) {
 			// 20% chance to bonk yourself instead!
@@ -223,7 +250,7 @@ module.exports = {
 		bonkerData.bonkCoins -= 2;
 		
 		// Set jail status (15 minutes for mega bonk)
-		const jailTime = 15 * 60 * 1000;
+		const jailTime = (interaction.client.config.jailSettings?.jailTimes?.mega || 15) * 60 * 1000;
 		targetData.isInJail = true;
 		targetData.jailEndTime = Date.now() + jailTime;
 		targetData.jailChannelId = jailChannel.id; // Store channel ID for cleanup

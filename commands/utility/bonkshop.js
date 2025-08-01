@@ -28,7 +28,8 @@ const shopItems = {
 	doubleCoin: { name: 'Double Coin Boost', price: 30, description: 'Earn double coins from claims for 24 hours', emoji: '💰' },
 	reducedSentence: { name: 'Parole Pass', price: 40, description: 'Next jail sentence is reduced by 50%', emoji: '🗝️' },
 	bonkBoost: { name: 'Bonk Power Boost', price: 35, description: 'Next bonk jails target for double time', emoji: '⚡' },
-	lucky: { name: 'Lucky Charm', price: 45, description: 'Next gamble has +20% better odds', emoji: '🍀' }
+	lucky: { name: 'Lucky Charm', price: 45, description: 'Next gamble has +20% better odds', emoji: '🍀' },
+	reflect: { name: 'Bonk Reflect', price: 55, description: 'Next bonk attempt against you bounces back to the attacker', emoji: '🪞' }
 };
 
 module.exports = {
@@ -53,7 +54,8 @@ module.exports = {
 							{ name: '💰 Double Coin Boost (30 coins)', value: 'doubleCoin' },
 							{ name: '🗝️ Parole Pass (40 coins)', value: 'reducedSentence' },
 							{ name: '⚡ Bonk Power Boost (35 coins)', value: 'bonkBoost' },
-							{ name: '🍀 Lucky Charm (45 coins)', value: 'lucky' }
+							{ name: '🍀 Lucky Charm (45 coins)', value: 'lucky' },
+							{ name: '🪞 Bonk Reflect (55 coins)', value: 'reflect' }
 						)))
 		.addSubcommand(subcommand =>
 			subcommand
@@ -73,7 +75,8 @@ module.exports = {
 							{ name: '💰 Double Coin Boost', value: 'doubleCoin' },
 							{ name: '🗝️ Parole Pass', value: 'reducedSentence' },
 							{ name: '⚡ Bonk Power Boost', value: 'bonkBoost' },
-							{ name: '🍀 Lucky Charm', value: 'lucky' }
+							{ name: '🍀 Lucky Charm', value: 'lucky' },
+							{ name: '🪞 Bonk Reflect', value: 'reflect' }
 						))),
 	async execute(interaction) {
 		const subcommand = interaction.options.getSubcommand();
@@ -238,6 +241,11 @@ module.exports = {
 				case 'lucky':
 					userData.activeEffects.luckyActive = true;
 					responseMessage = '🍀 Lucky Charm activated! Your next gamble will have +20% better odds.';
+					break;
+
+				case 'reflect':
+					userData.activeEffects.reflectActive = true;
+					responseMessage = '🪞 Bonk Reflect activated! The next bonk attempt against you will bounce back to the attacker!';
 					break;
 			}
 

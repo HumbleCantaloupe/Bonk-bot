@@ -23,12 +23,29 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
 const { token } = require('./config.json');
 
+// Load bot configuration
+let botConfig = {};
+try {
+	botConfig = JSON.parse(fs.readFileSync('./bot-config.json', 'utf8'));
+	console.log(`✅ Loaded bot configuration v${botConfig.botSettings.version}`);
+} catch (error) {
+	console.error('❌ Error loading bot-config.json:', error);
+	console.log('Using default configuration...');
+	// Fallback to basic config if file doesn't exist
+	botConfig = {
+		jailSettings: { roleName: 'Horny Jail', roleColor: '#FF69B4' },
+		economySettings: { startingCoins: 3 },
+		systemSettings: { jailCheckInterval: 60000 }
+	};
+}
+
 const client = new Client({ 
 	intents: [
 		GatewayIntentBits.Guilds
 	] 
 });
 client.commands = new Collection();
+client.config = botConfig; // Make config available to all commands
 
 const dataPath = path.join(__dirname, 'data.json');
 let userData = {};
@@ -53,7 +70,8 @@ async function startupRecovery(client) {
 	
 	for (const [guildId, guild] of client.guilds.cache) {
 		try {
-			const jailRole = guild.roles.cache.find(role => role.name === 'Horny Jail');
+			const jailRoleName = client.config.jailSettings?.roleName || 'Horny Jail';
+			const jailRole = guild.roles.cache.find(role => role.name === jailRoleName);
 			if (!jailRole) continue;
 			
 			const jailedMembers = guild.members.cache.filter(member => 
@@ -122,7 +140,7 @@ async function startupRecovery(client) {
 function getUserData(userId) {
 	if (!userData[userId]) {
 		userData[userId] = {
-			bonkCoins: 3, // Starting coins instead of daily credits
+			bonkCoins: botConfig.economySettings?.startingCoins || 3,
 			isInJail: false,
 			jailEndTime: null,
 			originalRoles: [],
@@ -295,11 +313,11 @@ async function forceReleaseAll(client) {
 	saveData();
 }
 
-// Run checks every minute
+// Run checks based on configured interval
 setInterval(async () => {
 	await checkJailReleases(client);
 	checkSpecialEvents();
-}, 60000);
+}, botConfig.systemSettings?.jailCheckInterval || 60000);
 
 client.getUserData = getUserData;
 client.saveData = saveData;

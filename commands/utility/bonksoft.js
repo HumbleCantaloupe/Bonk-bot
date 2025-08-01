@@ -79,12 +79,39 @@ module.exports = {
 		}
 
 		// Check if target has shield power-up and consume it
-		if (targetData.activeEffects && targetData.activeEffects.shield > 0) {
-			targetData.activeEffects.shield--;
-			interaction.client.setUserData(target.id, targetData);
+		if (targetData.activeEffects && targetData.activeEffects.shieldActive) {
+			targetData.activeEffects.shieldActive = false;
+			interaction.client.saveData();
 			return await interaction.reply({ 
-				content: `🛡️ ${target.displayName}'s shield blocked the bonk! (${targetData.activeEffects.shield} shields remaining)`,
+				content: `🛡️ ${target.displayName}'s shield blocked the soft bonk! The shield has been consumed.`,
 				ephemeral: true 
+			});
+		}
+
+		// Reflect power-up bounces the bonk back
+		if (targetData.activeEffects && targetData.activeEffects.reflectActive) {
+			targetData.activeEffects.reflectActive = false;
+			
+			// The soft bonk bounces back to the bonker
+			if (!bonkerData.isInJail) {
+				const bonkerMember = await interaction.guild.members.fetch(bonker.id);
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				
+				if (jailRole) {
+					bonkerData.isInJail = true;
+					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000);
+					await bonkerMember.roles.set([jailRole.id], 'Soft bonk reflected back!');
+				}
+			}
+			
+			bonkerData.bonkCoins--; // Soft bonk costs 1 coin
+			targetData.totalBonksReceived++; // They still "received" the bonk technically
+			bonkerData.totalBonksGiven++; // But it backfired
+			interaction.client.saveData();
+			
+			return await interaction.reply({ 
+				content: `🪞 **SOFT BONK REFLECTED!** 🪞\n${target.displayName}'s mirror deflected the soft bonk back at ${bonker}! Gentle justice served!`,
+				ephemeral: false
 			});
 		}
 		
@@ -193,7 +220,7 @@ module.exports = {
 		bonkerData.bonkCoins--;
 		
 		// Set jail status (5 minutes for soft bonk)
-		const jailTime = 5 * 60 * 1000;
+		const jailTime = (interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000;
 		targetData.isInJail = true;
 		targetData.jailEndTime = Date.now() + jailTime;
 		targetData.jailChannelId = jailChannel.id; // Store channel ID for cleanup

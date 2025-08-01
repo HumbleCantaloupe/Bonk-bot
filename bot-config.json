@@ -1,0 +1,160 @@
+{
+  "botSettings": {
+    "name": "Bonk Bot",
+    "description": "A hilarious Discord bot for sending friends to horny jail",
+    "version": "3.2.0",
+    "enableDebugLogging": true
+  },
+  "jailSettings": {
+    "roleName": "Horny Jail",
+    "roleColor": "#FF69B4",
+    "channelPrefix": "horny-jail-",
+    "jailTimes": {
+      "soft": 5,
+      "regular": 10,
+      "mega": 15
+    },
+    "autoDeleteChannelDelay": 5000,
+    "allowPublicViewing": true,
+    "enableJailChannelChat": true
+  },
+  "economySettings": {
+    "startingCoins": 3,
+    "dailyRewards": [
+      { "day": 1, "coins": 3 },
+      { "day": 2, "coins": 3 },
+      { "day": 3, "coins": 4 },
+      { "day": 4, "coins": 4 },
+      { "day": 5, "coins": 5 },
+      { "day": 6, "coins": 5 },
+      { "day": 7, "coins": 6 }
+    ],
+    "bonkCosts": {
+      "soft": 1,
+      "regular": 1,
+      "mega": 2
+    },
+    "gamblingSettings": {
+      "minBet": 1,
+      "maxBet": 50,
+      "winMultiplier": 2.5,
+      "winChance": 0.45
+    }
+  },
+  "shopSettings": {
+    "items": {
+      "shield": {
+        "name": "Bonk Shield",
+        "price": 25,
+        "description": "Blocks the next bonk attempt against you",
+        "emoji": "🛡️",
+        "category": "defense"
+      },
+      "immunity": {
+        "name": "1-Hour Immunity",
+        "price": 50,
+        "description": "Cannot be bonked for 1 hour",
+        "emoji": "🌟",
+        "category": "defense",
+        "duration": 3600000
+      },
+      "doubleCoin": {
+        "name": "Double Coin Boost",
+        "price": 30,
+        "description": "Earn double coins from claims for 24 hours",
+        "emoji": "💰",
+        "category": "economy",
+        "duration": 86400000
+      },
+      "reducedSentence": {
+        "name": "Parole Pass",
+        "price": 40,
+        "description": "Next jail sentence is reduced by 50%",
+        "emoji": "🗝️",
+        "category": "defense"
+      },
+      "bonkBoost": {
+        "name": "Bonk Power Boost",
+        "price": 35,
+        "description": "Next bonk jails target for double time",
+        "emoji": "⚡",
+        "category": "offense"
+      },
+      "lucky": {
+        "name": "Lucky Charm",
+        "price": 45,
+        "description": "Next gamble has +20% better odds",
+        "emoji": "🍀",
+        "category": "economy"
+      },
+      "reflect": {
+        "name": "Bonk Reflect",
+        "price": 55,
+        "description": "Next bonk attempt against you bounces back to the attacker",
+        "emoji": "🪞",
+        "category": "defense"
+      }
+    }
+  },
+  "specialEvents": {
+    "bonkRoulette": {
+      "enabled": false,
+      "backfireChance": 0.15,
+      "description": "Bonks have a chance to backfire on the attacker"
+    },
+    "doubleCoins": {
+      "enabled": false,
+      "multiplier": 2,
+      "description": "All coin rewards are doubled"
+    },
+    "freeJailDay": {
+      "enabled": false,
+      "description": "All jail times are reduced to 1 minute"
+    }
+  },
+  "moderationSettings": {
+    "adminImmunity": true,
+    "serverOwnerImmunity": true,
+    "protectedRoles": [],
+    "enableAntiSpam": true,
+    "maxBonksPerMinute": 5
+  },
+  "systemSettings": {
+    "dataBackupInterval": 300000,
+    "jailCheckInterval": 60000,
+    "startupRecovery": true,
+    "autoCleanupOrphans": true,
+    "maxJailChannels": 50
+  },
+  "messages": {
+    "jailMessages": [
+      "has been bonked and sent to horny jail!",
+      "got bonked! Time for some timeout!",
+      "has been sentenced to horny jail!",
+      "got the bonk hammer! Off to jail!"
+    ],
+    "releaseMessages": [
+      "has been released from horny jail! Welcome back to freedom! 🎉",
+      "is free! They've served their time.",
+      "has completed their sentence. Behave better!",
+      "is back! Hopefully they learned their lesson."
+    ],
+    "errorMessages": {
+      "noPermissions": "❌ I don't have permission to do that!",
+      "userNotFound": "❌ User not found!",
+      "alreadyInJail": "🚫 That user is already in horny jail!",
+      "cannotBonkSelf": "🚫 You cannot bonk yourself!",
+      "cannotBonkBot": "🚫 You cannot bonk bots!",
+      "insufficientCoins": "🚫 You don't have enough bonk coins!"
+    }
+  },
+  "features": {
+    "enableGambling": true,
+    "enableGifting": true,
+    "enableShop": true,
+    "enableStats": true,
+    "enableLeaderboards": true,
+    "enableSpecialEvents": true,
+    "enablePanicCommand": true
+  }
+}

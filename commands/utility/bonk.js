@@ -36,13 +36,13 @@ module.exports = {
 		
 		if (target.id === bonker.id) {
 			return await interaction.editReply({ 
-				content: '🚫 You cannot bonk yourself!',
+				content: interaction.client.config.messages?.errorMessages?.cannotBonkSelf || '🚫 You cannot bonk yourself!',
 			});
 		}
 
 		if (target.bot) {
 			return await interaction.editReply({ 
-				content: '🚫 You cannot bonk bots!',
+				content: interaction.client.config.messages?.errorMessages?.cannotBonkBot || '🚫 You cannot bonk bots!',
 			});
 		}
 
@@ -50,7 +50,7 @@ module.exports = {
 		
 		if (bonkerData.bonkCoins <= 0) {
 			return await interaction.editReply({ 
-				content: '🚫 You have no bonk coins left! Claim daily coins with `/bonkclaim`.',
+				content: interaction.client.config.messages?.errorMessages?.insufficientCoins || '🚫 You don\'t have enough bonk coins!',
 			});
 		}
 
@@ -87,9 +87,35 @@ module.exports = {
 			});
 		}
 
+		// Check for reflect
+		if (targetData.activeEffects && targetData.activeEffects.reflectActive) {
+			targetData.activeEffects.reflectActive = false;
+			
+			// The bonk bounces back to the bonker
+			if (!bonkerData.isInJail) {
+				const bonkerMember = await interaction.guild.members.fetch(bonker.id);
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
+				
+				if (jailRole) {
+					bonkerData.isInJail = true;
+					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000);
+					await bonkerMember.roles.set([jailRole.id], 'Bonk reflected back!');
+				}
+			}
+			
+			bonkerData.bonkCoins--;
+			targetData.totalBonksReceived++; // They still "received" the bonk technically
+			bonkerData.totalBonksGiven++; // But it backfired
+			interaction.client.saveData();
+			
+			return await interaction.editReply({ 
+				content: `🪞 **BONK REFLECTED!** 🪞\n${target.displayName}'s mirror deflected the bonk back at ${bonker}! The bonker has been jailed instead!`,
+			});
+		}
+
 		if (targetData.isInJail) {
 			return await interaction.editReply({ 
-				content: `🚫 ${target.displayName} is already in horny jail!`,
+				content: interaction.client.config.messages?.errorMessages?.alreadyInJail || `🚫 ${target.displayName} is already in horny jail!`,
 			});
 		}
 
@@ -97,10 +123,10 @@ module.exports = {
 		if (interaction.client.specialEvents.bonkRoulette && Math.random() < 0.15) {
 			const bonkerMember = await interaction.guild.members.fetch(bonker.id);
 			if (!bonkerData.isInJail) {
-				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				if (jailRole) {
 					bonkerData.isInJail = true;
-					bonkerData.jailEndTime = Date.now() + (5 * 60 * 1000);
+					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000);
 					await bonkerMember.roles.set([jailRole.id], 'Bonk roulette backfire!');
 				}
 			}
@@ -114,12 +140,13 @@ module.exports = {
 		}
 
 		// Find or create jail role
-		let jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+		const jailRoleName = interaction.client.config.jailSettings?.roleName || 'Horny Jail';
+		let jailRole = interaction.guild.roles.cache.find(role => role.name === jailRoleName);
 		if (!jailRole) {
 			try {
 				jailRole = await interaction.guild.roles.create({
-					name: 'Horny Jail',
-					color: '#FF69B4',
+					name: jailRoleName,
+					color: interaction.client.config.jailSettings?.roleColor || '#FF69B4',
 					reason: 'Role for users in horny jail'
 				});
 				console.log('Created Horny Jail role');
@@ -132,13 +159,14 @@ module.exports = {
 		}
 
 		// Create their personal jail channel
-		const jailChannelName = `horny-jail-${target.username.toLowerCase().replace(/[^a-z0-9]/g, '')}-${target.discriminator || Math.floor(Math.random() * 10000)}`;
+		const jailChannelName = `${interaction.client.config.jailSettings?.channelPrefix || 'horny-jail-'}${target.username.toLowerCase().replace(/[^a-z0-9]/g, '')}-${target.discriminator || Math.floor(Math.random() * 10000)}`;
+		const configJailMinutes = interaction.client.config.jailSettings?.jailTimes?.regular || 10;
 		let jailChannel;
 		try {
 			jailChannel = await interaction.guild.channels.create({
 				name: jailChannelName,
 				type: 0, // Text channel
-				topic: `🔒 ${target.displayName}'s personal horny jail! You'll be released in 10 minutes.`,
+				topic: `🔒 ${target.displayName}'s personal horny jail! You'll be released in ${configJailMinutes} minutes.`,
 				permissionOverwrites: [
 					{
 						id: target.id,
@@ -211,7 +239,7 @@ module.exports = {
 		bonkerData.bonkCoins--;
 		
 		targetData.isInJail = true;
-		let jailTime = 10 * 60 * 1000; // 10 minutes
+		let jailTime = (interaction.client.config.jailSettings?.jailTimes?.regular || 10) * 60 * 1000;
 		
 		// Power-up effects
 		if (bonkerData.activeEffects && bonkerData.activeEffects.bonkBoostActive) {
@@ -235,9 +263,12 @@ module.exports = {
 
 		// Create bonk embed
 		const jailMinutes = Math.floor(jailTime / (60 * 1000));
+		const jailMessages = interaction.client.config.messages?.jailMessages || ["has been bonked and sent to horny jail!"];
+		const randomJailMessage = jailMessages[Math.floor(Math.random() * jailMessages.length)];
+		
 		const bonkEmbed = new EmbedBuilder()
 			.setTitle('🔨 BONK! 🔨')
-			.setDescription(`${target} has been bonked by ${bonker}!`)
+			.setDescription(`${target} ${randomJailMessage}`)
 			.addFields(
 				{ name: '🚨 Sentence', value: `Sent to horny jail for ${jailMinutes} minutes!`, inline: true },
 				{ name: '🪙 Remaining Coins', value: `${bonkerData.bonkCoins}`, inline: true },
