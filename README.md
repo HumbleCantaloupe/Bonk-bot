@@ -1,19 +1,11 @@
 # 🔨 Discord Bonk Bot
 
-> **A Discord bot for sending Muskulhige Hiya folks to horny jai---
+> A Discord bot for sending Muskulhige Hiya folks to horny jail
 
-## 🌐 Deployment Options
-
-### 🖥️ **---
-
-## 🎮 Commands
-
-### Core Commands Hosting (Recommended for Testing)**h style!**
 
 [![Discord.js](https://img.shields.io/badge/discord.js-v14.21.0-blue.svg)](https://discord.js.org/)
 [![Node.js](https://img.shields.io/badge/node.js-v18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/AhmedViam/Bonk-bot?style=social)](https://github.com/AhmedViam/Bonk-bot/stargazers)
 
 ## 🎯 What is Bonk Bot?
 
@@ -95,49 +87,6 @@ A fun Discord bot created for the chaotic **Muskulhige Hiya** server (where appa
    node main.js
    ```
 
----
-
-## � Deployment Options
-
-### 🖥️ **Local Hosting (Recommended for Testing)**
-Perfect for development and small servers:
-- Run on your personal computer
-- Free but requires your computer to stay online
-- Easy setup and debugging
-
-### ☁️ **Cloud Hosting (Recommended for Production)**
-
-#### **Free Options:**
-- **[Railway](https://railway.app/)** - Easy deployment, generous free tier
-- **[Render](https://render.com/)** - Simple setup, auto-deploys from GitHub
-- **[Heroku](https://heroku.com/)** - Popular choice, easy scaling
-
-#### **Paid Options:**
-- **[DigitalOcean](https://digitalocean.com/)** - $5/month droplets
-- **[AWS EC2](https://aws.amazon.com/ec2/)** - Scalable, pay-as-you-use
-- **[Google Cloud Platform](https://cloud.google.com/)** - Reliable infrastructure
-
-### 📋 **Deployment Steps**
-
-1. **Fork this repository** to your GitHub account
-2. **Choose a hosting platform** from the options above
-3. **Connect your GitHub repo** to the hosting service
-4. **Set environment variables:**
-   ```env
-   DISCORD_TOKEN=your_bot_token_here
-   CLIENT_ID=your_bot_client_id
-   GUILD_ID=your_server_id
-   ```
-5. **Deploy and enjoy!** 🎉
-
-### 💡 **Pro Tips**
-- Use environment variables instead of `config.json` for production
-- Enable auto-deploy from your main branch
-- Monitor your bot's uptime and performance
-- Keep your token secure and never commit it to GitHub
-
----
-
 ## �🎮 Commands
 
 ### Core Commands
@@ -218,7 +167,7 @@ bonk-bot/
 
 <div align="center">
 
-**Made with ❤️ and a lot of ☕ by [Marrow](https://github.com/AhmedViam)**
+**Made with ❤️ and a lot of ☕ by [Marrow](https://github.com/HumbleCantaloupe)**
 
 *Remember: Bonk responsibly!* 🔨
 
