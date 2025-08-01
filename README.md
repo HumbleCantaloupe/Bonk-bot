@@ -2,7 +2,7 @@
 
 > A comprehensive Discord bot for sending friends to horny jail with style and chaos
 
-## 🎮 Commands
+[!## 🎮 Commands
 
 ### Core Bonking Commands
 - `/bonk @user` - Send someone to horny jail (10 min)
@@ -14,7 +14,7 @@
 - `/bonkclaim` - Claim daily coins (3-6 coins with streak bonuses)
 - `/bonkbalance` - Check your coin balance and statistics
 - `/bonkgift @user amount` - Gift coins to friends (spread the wealth)
-- `/bonkgamble amount` - Risk coins for rewards (configurable odds)](https://img.shields.io/badge/discord.js-v14.21.0-blue.svg)](https://discord.js.org/)
+- `/bonkgamble amount` - Risk coins for rewards (configurable odds)ord.js](https://img.shields.io/badge/discord.js-v14.21.0-blue.svg)](https://discord.js.org/)
 [![Node.js](https://img.shields.io/badge/node.js-v18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-3.2.0-brightgreen.svg)](package.json)
