@@ -23,8 +23,11 @@
 
 A feature-rich Discord bot originally created for the chaotic **Muskulhige Hiya** server. Send your friends to **individual horny jail channels** where everyone can watch their shame unfold. Complete with a robust economy system, defensive power-ups, emergency management tools, and full configuration customization.
 
+<div align="center">
 
 ![Bonk Demo](https://c.tenor.com/DuN47QciYfsAAAAC/tenor.gif)
+
+</div>
 
 ---
 
@@ -52,7 +55,7 @@ A feature-rich Discord bot originally created for the chaotic **Muskulhige Hiya*
 | 🗝️ **Parole Pass** | 40 coins | Next jail sentence reduced by 50% | Defense |
 | ⚡ **Bonk Power Boost** | 35 coins | Next bonk jails target for double time | Offense |
 | 🍀 **Lucky Charm** | 45 coins | Next gamble has +20% better odds | Economy |
-| 🪞 **Bonk Reflect** | 55 coins | Next bonk attempt bounces back to attacker | Defense |
+| ↩️ **Bonk Reflect** | 55 coins | Next bonk attempt bounces back to attacker | Defense |
 
 ### 📊 **Statistics & Management**
 - **Comprehensive Stats** - Track bonks given/received, jail time, streaks, coins earned

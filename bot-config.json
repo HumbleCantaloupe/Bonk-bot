@@ -91,7 +91,7 @@
         "name": "Bonk Reflect",
         "price": 55,
         "description": "Next bonk attempt against you bounces back to the attacker",
-        "emoji": "🪞",
+        "emoji": "↩️",
         "category": "defense"
       }
     }

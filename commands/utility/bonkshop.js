@@ -29,7 +29,7 @@ const shopItems = {
 	reducedSentence: { name: 'Parole Pass', price: 40, description: 'Next jail sentence is reduced by 50%', emoji: '🗝️' },
 	bonkBoost: { name: 'Bonk Power Boost', price: 35, description: 'Next bonk jails target for double time', emoji: '⚡' },
 	lucky: { name: 'Lucky Charm', price: 45, description: 'Next gamble has +20% better odds', emoji: '🍀' },
-	reflect: { name: 'Bonk Reflect', price: 55, description: 'Next bonk attempt against you bounces back to the attacker', emoji: '🪞' }
+	reflect: { name: 'Bonk Reflect', price: 55, description: 'Next bonk attempt against you bounces back to the attacker', emoji: '↩️' }
 };
 
 module.exports = {
@@ -55,7 +55,7 @@ module.exports = {
 							{ name: '🗝️ Parole Pass (40 coins)', value: 'reducedSentence' },
 							{ name: '⚡ Bonk Power Boost (35 coins)', value: 'bonkBoost' },
 							{ name: '🍀 Lucky Charm (45 coins)', value: 'lucky' },
-							{ name: '🪞 Bonk Reflect (55 coins)', value: 'reflect' }
+							{ name: '↩️ Bonk Reflect (55 coins)', value: 'reflect' }
 						)))
 		.addSubcommand(subcommand =>
 			subcommand
@@ -76,7 +76,7 @@ module.exports = {
 							{ name: '🗝️ Parole Pass', value: 'reducedSentence' },
 							{ name: '⚡ Bonk Power Boost', value: 'bonkBoost' },
 							{ name: '🍀 Lucky Charm', value: 'lucky' },
-							{ name: '🪞 Bonk Reflect', value: 'reflect' }
+							{ name: '↩️ Bonk Reflect', value: 'reflect' }
 						))),
 	async execute(interaction) {
 		const subcommand = interaction.options.getSubcommand();
@@ -245,7 +245,7 @@ module.exports = {
 
 				case 'reflect':
 					userData.activeEffects.reflectActive = true;
-					responseMessage = '🪞 Bonk Reflect activated! The next bonk attempt against you will bounce back to the attacker!';
+					responseMessage = '↩️ Bonk Reflect activated! The next bonk attempt against you will bounce back to the attacker!';
 					break;
 			}
 
