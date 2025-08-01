@@ -11,7 +11,7 @@
 
 A fun Discord bot created for the chaotic **Muskulhige Hiya** server (where apparently everyone needed more bonking). Send your horny friends to **individual horny jail channels** where everyone can watch their shame unfold. With a full economy system, power-ups, and enough customization to make every bonk memorable.
 
-![Bonk Demo](https://c.tenor.com/x8v1oNUOmg4AAAAd/tenor.gif)
+![Bonk Demo](https://c.tenor.com/DuN47QciYfsAAAAC/tenor.gif)
 
 ---
 
@@ -163,61 +163,6 @@ bonk-bot/
 - Automatic backups on every save
 - Startup recovery for crash scenarios
 - Individual jail channel cleanup
-
----
-
-## 🤝 Contributing
-
-We love contributions! Here's how you can help:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
-
-### Ideas for Contributions
-- 🎨 New power-ups and shop items
-- 🎲 Additional special events
-- 📊 Enhanced statistics tracking
-- 🎵 Sound effect integration
-- 🌍 Multi-language support
-
----
-
-## 📝 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🎉 Fun Facts
-
-- Over **2,700+ lines** of carefully crafted chaos
-- **18 unique commands** for maximum bonking potential
-- **6 power-ups** to strategize your bonking game
-- **Individual jail system** - no more shared shame!
-- **Auto-recovery** system prevents permanent jail bugs
-
----
-
-## 🆘 Support
-
-Having issues? We've got you covered:
-
-- 📖 **Check the [Issues](https://github.com/AhmedViam/Bonk-bot/issues)** for common problems
-- 💬 **Join our Discord** (coming soon!)
-- 📧 **Contact the developer** via GitHub
-
----
-
-## ⭐ Show Your Support
-
-If you found this bot hilarious and useful, please consider:
-- Giving it a ⭐ **star** on GitHub
-- 🔄 **Sharing** it with friends
-- 🐛 **Reporting bugs** to help improve it
-- 💡 **Suggesting features** for future updates
 
 ---
 

@@ -246,7 +246,7 @@ module.exports = {
 				{ name: '🔥 Bonk Streak', value: `${bonkerData.bonkStreak}`, inline: true }
 			)
 			.setColor('#FF69B4')
-			.setImage('https://c.tenor.com/x8v1oNUOmg4AAAAd/tenor.gif')
+			.setImage('https://c.tenor.com/DuN47QciYfsAAAAC/tenor.gif')
 			.setTimestamp();
 
 		await interaction.editReply({ embeds: [bonkEmbed] });
