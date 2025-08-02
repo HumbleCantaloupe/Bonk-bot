@@ -556,7 +556,7 @@ async function forceReleaseAll(client) {
 setInterval(async () => {
 	await checkJailReleases(client);
 	checkSpecialEvents();
-}, botConfig.systemSettings?.jailCheckInterval || 60000);
+}, 10000); // Check every 10 seconds for more responsive jail releases
 
 client.getUserData = getUserData;
 client.saveData = saveData;
