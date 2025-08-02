@@ -41,7 +41,9 @@ try {
 
 const client = new Client({ 
 	intents: [
-		GatewayIntentBits.Guilds
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent
 	] 
 });
 client.commands = new Collection();
@@ -594,6 +596,54 @@ client.once(Events.ClientReady, async readyClient => {
 	
 	await startupRecovery(client);
 	await checkJailReleases(client);
+});
+
+// Message listener for good behavior tracking in jail channels
+client.on(Events.MessageCreate, async message => {
+	// Ignore bot messages and DMs
+	if (message.author.bot || !message.guild) return;
+	
+	// Check if this is a jail channel
+	if (!message.channel.name.startsWith('horny-jail-')) return;
+	
+	// Check if the message author is in jail
+	const userData = getUserData(message.author.id);
+	if (!userData.isInJail) return;
+	
+	// Initialize good behavior tracking
+	if (!userData.goodBehavior) {
+		userData.goodBehavior = {
+			messagesInJail: 0,
+			timeReduction: 0,
+			lastMessage: null
+		};
+	}
+	
+	// Track message (with cooldown to prevent spam)
+	const now = Date.now();
+	if (!userData.goodBehavior.lastMessage || (now - userData.goodBehavior.lastMessage) > 30000) { // 30 second cooldown
+		userData.goodBehavior.messagesInJail++;
+		userData.goodBehavior.lastMessage = now;
+		
+		// Every 10 messages, apply time reduction
+		if (userData.goodBehavior.messagesInJail % 10 === 0) {
+			const reductionMinutes = 2; // 2 minutes reduction per 10 messages
+			const reductionMs = reductionMinutes * 60 * 1000;
+			
+			if (userData.jailEndTime && userData.jailEndTime > now) {
+				const originalEndTime = userData.jailEndTime;
+				userData.jailEndTime = Math.max(now + 60000, userData.jailEndTime - reductionMs); // Minimum 1 minute left
+				
+				if (userData.jailEndTime < originalEndTime) {
+					const actualReduction = Math.floor((originalEndTime - userData.jailEndTime) / 60000);
+					await message.react('⏰');
+					await message.channel.send(`🎉 **Good behavior bonus!** ${message.author.displayName} earned **${actualReduction} minute(s)** off their sentence! Keep being active! 📖✨`);
+				}
+			}
+		}
+		
+		saveData();
+	}
 });
 
 client.login(token);

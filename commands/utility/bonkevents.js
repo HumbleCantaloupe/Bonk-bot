@@ -39,7 +39,9 @@ module.exports = {
 						.setDescription('Type of event to start')
 						.setRequired(true)
 						.addChoices(
-							{ name: 'Double Credit Weekend', value: 'double' }
+							{ name: 'Double Credit Weekend', value: 'double' },
+							{ name: 'Bonk Roulette', value: 'roulette' },
+							{ name: 'Reverse Bonk Day', value: 'reverse' }
 						))
 				.addIntegerOption(option =>
 					option.setName('duration')
@@ -126,7 +128,7 @@ module.exports = {
 				.setColor('#00FF00')
 				.setTimestamp();
 
-			await interaction.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed], ephemeral: true });
 
 		} else if (subcommand === 'stop') {
 			specialEvents.doubleBonkWeekend = false;
@@ -136,7 +138,7 @@ module.exports = {
 			specialEvents.eventEndTime = null;
 			interaction.client.saveData();
 
-			await interaction.reply('🛑 All special events have been stopped.');
+			await interaction.reply({ content: '🛑 All special events have been stopped.', ephemeral: true });
 
 		} else if (subcommand === 'status') {
 			const embed = new EmbedBuilder()
@@ -192,7 +194,7 @@ module.exports = {
 				}
 			}
 
-			await interaction.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed], ephemeral: true });
 
 		} else if (subcommand === 'immunity') {
 			const user = interaction.options.getUser('user');
@@ -201,17 +203,17 @@ module.exports = {
 			if (grant) {
 				if (!specialEvents.bonkImmunityUsers.includes(user.id)) {
 					specialEvents.bonkImmunityUsers.push(user.id);
-					await interaction.reply(`🛡️ Granted bonk immunity to ${user.displayName}!`);
+					await interaction.reply({ content: `🛡️ Granted bonk immunity to ${user.displayName}!`, ephemeral: true });
 				} else {
-					await interaction.reply(`${user.displayName} already has bonk immunity!`);
+					await interaction.reply({ content: `${user.displayName} already has bonk immunity!`, ephemeral: true });
 				}
 			} else {
 				const index = specialEvents.bonkImmunityUsers.indexOf(user.id);
 				if (index > -1) {
 					specialEvents.bonkImmunityUsers.splice(index, 1);
-					await interaction.reply(`🗡️ Removed bonk immunity from ${user.displayName}!`);
+					await interaction.reply({ content: `🗡️ Removed bonk immunity from ${user.displayName}!`, ephemeral: true });
 				} else {
-					await interaction.reply(`${user.displayName} doesn't have bonk immunity!`);
+					await interaction.reply({ content: `${user.displayName} doesn't have bonk immunity!`, ephemeral: true });
 				}
 			}
 			
@@ -222,7 +224,7 @@ module.exports = {
 			specialEvents.eventMultiplier = value;
 			interaction.client.saveData();
 
-			await interaction.reply(`✨ Set credit multiplier to **${value}x**! Users will get ${Math.floor(3 * value)} credits per day.`);
+			await interaction.reply({ content: `✨ Set credit multiplier to **${value}x**! Users will get ${Math.floor(3 * value)} credits per day.`, ephemeral: true });
 		}
 	},
 };

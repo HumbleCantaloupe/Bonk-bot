@@ -118,7 +118,7 @@ module.exports = {
 
 			interaction.client.saveData();
 
-			await interaction.reply(`✅ Released ${user.displayName} from horny jail early!`);
+			await interaction.reply({ content: `✅ Released ${user.displayName} from horny jail early!`, ephemeral: true });
 
 		} else if (subcommand === 'addcredits') {
 			const user = interaction.options.getUser('user');
@@ -128,7 +128,7 @@ module.exports = {
 			userData.bonkCredits += amount;
 			interaction.client.saveData();
 
-			await interaction.reply(`✅ Added ${amount} bonk credits to ${user.displayName}! They now have ${userData.bonkCredits} credits.`);
+			await interaction.reply({ content: `✅ Added ${amount} bonk credits to ${user.displayName}! They now have ${userData.bonkCredits} credits.`, ephemeral: true });
 
 		} else if (subcommand === 'reset') {
 			// Clear all user data
@@ -138,7 +138,7 @@ module.exports = {
 			
 			fs.writeFileSync(dataPath, '{}');
 			
-			await interaction.reply('⚠️ All user data has been reset!');
+			await interaction.reply({ content: '⚠️ All user data has been reset!', ephemeral: true });
 		}
 	},
 };

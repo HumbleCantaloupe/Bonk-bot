@@ -41,6 +41,7 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
 - **Admin Protection** - Server owner and admins are immune to bonking
 - **Auto-Recovery** - Bot automatically fixes broken permissions and releases stuck users on restart
 - **Crash Protection** - Smart startup recovery prevents permanent jail situations
+- **Jail Escape Mechanics** - Lock picking, jailbreak events, and good behavior rewards
 
 ### 💰 **Complete Economy System**
 - **Daily Coin Claims** - Earn 8-20 coins daily with consecutive login streak bonuses
@@ -59,7 +60,37 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
 | 🍀 **Lucky Charm** | 45 coins | Next gamble has +20% better odds | Economy |
 | ↩️ **Bonk Reflect** | 55 coins | Next bonk attempt bounces back to attacker | Defense |
 
-### 📊 **Statistics & Management**
+### 🎉 **Special Events System**
+Administrators can activate server-wide events that change gameplay mechanics:
+
+| Event | Effect | Duration | Description |
+|-------|--------|----------|-------------|
+| 🎊 **Double Credit Weekend** | 2x daily coin rewards | Configurable | Everyone gets **6 bonk credits** per day instead of 3! |
+| 🎲 **Bonk Roulette** | 20% backfire chance | Configurable | Mega bonks have a **20% chance** to backfire and jail the bonker instead! |
+| 🔄 **Reverse Bonk Day** | Free revenge bonks | Configurable | Victims can immediately bonk back for **FREE** within 1 minute! |
+
+**Event Features:**
+- **Flexible Duration**: Events can run from 1 hour to 1 week (168 hours)
+- **Custom Multipliers**: Set credit multipliers from 0.1x to 10.0x
+- **User Immunity**: Grant specific users immunity from bonking during events
+- **Event Stacking**: Multiple event effects can be active simultaneously
+
+### � **Jail Escape System**
+Turn jail time into strategic gameplay with multiple escape routes:
+
+| Escape Method | Cost | Success Rate | Description |
+|---------------|------|--------------|-------------|
+| 🔑 **Lock Picking** | 5-50 coins | 10-70% | Solo escape attempt - more coins = better odds |
+| 🤝 **Jailbreak** | 10+ coins | 100% at 100 coins | Team effort - multiple users fund the escape |
+| 📖 **Good Behavior** | Free | Automatic | Stay active in jail to earn sentence reductions |
+
+**Escape Features:**
+- **Lock Picking**: Pay coins for RNG-based escape attempts (5 coins = 10% chance, 50 coins = 70% chance)
+- **Jailbreak Events**: Multiple users can contribute coins to break someone out (requires 100 total coins)
+- **Good Behavior**: Earn 2 minutes off sentence for every 10 messages in jail (30-second cooldown between counted messages)
+- **Strategic Gameplay**: Choose between solo risk vs. community cooperation
+
+### �📊 **Statistics & Management**
 - **Comprehensive Stats** - Track bonks given/received, jail time, streaks, coins earned
 - **Leaderboards** - See who's the ultimate bonker or victim
 - **Special Events** - Bonk Roulette can backfire spectacularly
@@ -127,7 +158,7 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
    node main.js
    ```
 
-## �🎮 Commands
+## 🎮 Commands
 
 ### Core Commands
 - `/bonk @user` - Send someone to horny jail (10 min)
@@ -147,11 +178,29 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
 - `/bonkshop inventory` - Check your items and active effects
 - `/bonkshop use item` - Activate power-ups strategically
 
+### Escape Commands
+- `/bonkescape lockpick coins` - Pay coins to attempt lock picking escape
+- `/bonkescape jailbreak @prisoner coins` - Contribute coins to help someone escape
+- `/bonkescape behavior` - Check your good behavior status and sentence reduction
+
 ### Administrative Commands
 - `/bonkstats` - View detailed personal statistics
 - `/bonkadmin` - Admin management tools (admin only)
+  - `release @user` - Release a user from horny jail early
+  - `addcredits @user amount` - Add bonk credits to a user (1-10 coins)
+  - `reset` - Reset all user data (use with caution!)
 - `/bonkevents` - Special event controls (admin only)
-- `/bonkpanic` - 🚨 Emergency: Release all jailed users (admin only)
+  - `start event duration` - Start special events (Double Credit Weekend, Bonk Roulette, Reverse Bonk Day)
+  - `stop` - Stop all active events
+  - `status` - Check current event status
+  - `immunity @user grant/remove` - Grant or remove bonk immunity
+  - `multiplier value` - Set credit multiplier for events (0.1-10.0)
+- `/bonkpanic` - 🚨 Emergency: Release all jailed users and restore permissions (admin only)
+- `/bonkfix @user` - 🔧 Manually restore roles and fix stuck users (admin only)
+- `/bonkdebug @user` - 🐛 Debug jail timestamps and fix stuck users (admin only)
+- `/bonkdebuguser @user` - Debug a specific user's jail state (admin only)
+- `/bonkroles @user` - 🔧 Check saved role data for users (admin only)
+- `/bonktest` - 🔧 Test jail release system (admin only)
 
 ---
 
