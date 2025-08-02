@@ -77,9 +77,11 @@ module.exports = {
 			result += '\n🍀 **Lucky Charm boost applied!**';
 		}
 
-		const winnings = Math.floor(amount * multiplier);
+		// Fix floating-point precision issues by rounding properly
+		const winnings = Math.round(amount * multiplier * 100) / 100; // Round to 2 decimal places, then floor
+		const finalWinnings = Math.floor(winnings); // Ensure integer coins
 		userData.bonkCoins -= amount;
-		userData.bonkCoins += winnings;
+		userData.bonkCoins += finalWinnings;
 		interaction.client.saveData();
 
 		const embed = new EmbedBuilder()
@@ -87,10 +89,10 @@ module.exports = {
 			.setDescription(result)
 			.addFields(
 				{ name: '💰 Bet', value: `${amount} coins`, inline: true },
-				{ name: '🎁 Winnings', value: `${winnings} coins`, inline: true },
-				{ name: '📊 Net Result', value: `${winnings - amount >= 0 ? '+' : ''}${winnings - amount} coins`, inline: true }
+				{ name: '🎁 Winnings', value: `${finalWinnings} coins`, inline: true },
+				{ name: '📊 Net Result', value: `${finalWinnings - amount >= 0 ? '+' : ''}${finalWinnings - amount} coins`, inline: true }
 			)
-			.setColor(winnings > amount ? '#00FF00' : '#FF0000')
+			.setColor(finalWinnings > amount ? '#00FF00' : '#FF0000')
 			.setTimestamp();
 
 		await interaction.reply({ embeds: [embed] });

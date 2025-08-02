@@ -56,6 +56,13 @@ let userData = {};
 const orphanedRoleCleanupCooldown = new Map(); // userId -> lastCleanupTime
 const CLEANUP_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes between cleanup attempts per user
 
+// Channel deletion timeout management to prevent memory leaks
+const channelDeletionTimeouts = new Map(); // channelId -> timeoutId
+
+// Rate limiting for bonk commands to prevent Discord API abuse
+const bonkCooldowns = new Map(); // userId -> lastBonkTime
+const BONK_COOLDOWN_MS = 3 * 1000; // 3 seconds between bonk attempts per user
+
 // Load saved data
 if (fs.existsSync(dataPath)) {
 	try {
@@ -67,7 +74,19 @@ if (fs.existsSync(dataPath)) {
 }
 
 function saveData() {
-	fs.writeFileSync(dataPath, JSON.stringify(userData, null, 2));
+	try {
+		fs.writeFileSync(dataPath, JSON.stringify(userData, null, 2));
+	} catch (error) {
+		console.error('❌ Error saving data:', error);
+	}
+}
+
+async function saveDataAsync() {
+	try {
+		await fs.promises.writeFile(dataPath, JSON.stringify(userData, null, 2));
+	} catch (error) {
+		console.error('❌ Error saving data:', error);
+	}
 }
 
 // Fix broken permissions after bot restarts
@@ -355,7 +374,13 @@ async function checkJailReleases(client) {
 									await jailChannel.send(`🔓 ${member} has been released from horny jail! This channel will be deleted in 5 seconds. Welcome back to freedom! 🎉`);
 									const channelIdToDelete = user.jailChannelId; // Store before deleting from userData
 									delete user.jailChannelId; // Clean up userData first
-									setTimeout(async () => {
+									
+									// Clear any existing timeout for this channel
+									if (channelDeletionTimeouts.has(channelIdToDelete)) {
+										clearTimeout(channelDeletionTimeouts.get(channelIdToDelete));
+									}
+									
+									const timeoutId = setTimeout(async () => {
 										try {
 											const channelToDelete = guild.channels.cache.get(channelIdToDelete);
 											if (channelToDelete) {
@@ -364,8 +389,13 @@ async function checkJailReleases(client) {
 											}
 										} catch (deleteError) {
 											console.error(`❌ Error deleting jail channel:`, deleteError.message);
+										} finally {
+											// Clean up timeout reference
+											channelDeletionTimeouts.delete(channelIdToDelete);
 										}
 									}, 5000);
+									
+									channelDeletionTimeouts.set(channelIdToDelete, timeoutId);
 								} else {
 									console.log(`⚠️ Jail channel ${user.jailChannelId} not found, cleaning up data...`);
 									delete user.jailChannelId; // Channel doesn't exist, clean up
@@ -530,6 +560,21 @@ setInterval(async () => {
 
 client.getUserData = getUserData;
 client.saveData = saveData;
+client.saveDataAsync = saveDataAsync;
+
+// Helper function to check bonk cooldown
+client.checkBonkCooldown = function(userId) {
+	const lastBonk = bonkCooldowns.get(userId) || 0;
+	const now = Date.now();
+	const timeLeft = BONK_COOLDOWN_MS - (now - lastBonk);
+	
+	if (timeLeft > 0) {
+		return { onCooldown: true, timeLeft: Math.ceil(timeLeft / 1000) };
+	}
+	
+	bonkCooldowns.set(userId, now);
+	return { onCooldown: false, timeLeft: 0 };
+};
 
 // Special events stuff
 const specialEvents = {
@@ -635,7 +680,7 @@ client.on(Events.MessageCreate, async message => {
 				userData.jailEndTime = Math.max(now + 60000, userData.jailEndTime - reductionMs); // Minimum 1 minute left
 				
 				if (userData.jailEndTime < originalEndTime) {
-					const actualReduction = Math.floor((originalEndTime - userData.jailEndTime) / 60000);
+					const actualReduction = Math.max(1, Math.floor((originalEndTime - userData.jailEndTime) / 60000)); // Ensure at least 1 minute reduction
 					await message.react('⏰');
 					await message.channel.send(`🎉 **Good behavior bonus!** ${message.author.displayName} earned **${actualReduction} minute(s)** off their sentence! Keep being active! 📖✨`);
 				}

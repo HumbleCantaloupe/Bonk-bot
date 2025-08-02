@@ -31,6 +31,14 @@ module.exports = {
 	async execute(interaction) {
 		await interaction.deferReply();
 		
+		// Check rate limiting
+		const cooldownCheck = interaction.client.checkBonkCooldown(interaction.user.id);
+		if (cooldownCheck.onCooldown) {
+			return await interaction.editReply({ 
+				content: `⏰ Slow down! You can bonk again in ${cooldownCheck.timeLeft} seconds.`,
+			});
+		}
+		
 		const target = interaction.options.getUser('target');
 		const bonker = interaction.user;
 		
@@ -188,8 +196,10 @@ module.exports = {
 			}
 		}
 
-		// Create their personal jail channel
-		const jailChannelName = `${interaction.client.config.jailSettings?.channelPrefix || 'horny-jail-'}${target.username.toLowerCase().replace(/[^a-z0-9]/g, '')}-${target.discriminator || Math.floor(Math.random() * 10000)}`;
+		// Create their personal jail channel with safe name generation
+		const sanitizedUsername = target.username.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+		const fallbackId = target.discriminator || Math.floor(Math.random() * 10000);
+		const jailChannelName = `${interaction.client.config.jailSettings?.channelPrefix || 'horny-jail-'}${sanitizedUsername}-${fallbackId}`;
 		const configJailMinutes = interaction.client.config.jailSettings?.jailTimes?.regular || 10;
 		let jailChannel;
 		try {

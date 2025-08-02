@@ -27,6 +27,15 @@ module.exports = {
 				.setDescription('The user to mega bonk')
 				.setRequired(true)),
 	async execute(interaction) {
+		// Check rate limiting first
+		const cooldownCheck = interaction.client.checkBonkCooldown(interaction.user.id);
+		if (cooldownCheck.onCooldown) {
+			return await interaction.reply({ 
+				content: `⏰ Slow down! You can mega bonk again in ${cooldownCheck.timeLeft} seconds.`,
+				ephemeral: true 
+			});
+		}
+		
 		const target = interaction.options.getUser('target');
 		const bonker = interaction.user;
 		
@@ -185,7 +194,10 @@ module.exports = {
 		}
 
 		// Create individual horny jail channel for this user
-		const jailChannelName = `horny-jail-${target.username.toLowerCase().replace(/[^a-z0-9]/g, '')}-${target.discriminator || Math.floor(Math.random() * 10000)}`;
+				// Create personal jail channel with safe name generation
+		const sanitizedUsername = target.username.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+		const fallbackId = target.discriminator || Math.floor(Math.random() * 10000);
+		const jailChannelName = `horny-jail-${sanitizedUsername}-${fallbackId}`;
 		let jailChannel;
 		try {
 			jailChannel = await interaction.guild.channels.create({

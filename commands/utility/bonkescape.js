@@ -71,7 +71,16 @@ module.exports = {
 			}
 
 			// Calculate success chance based on coins spent (5 coins = 10%, 50 coins = 70%)
-			const successChance = Math.min(10 + ((coinsToSpend - 5) * (60 / 45)), 70);
+			// Added bounds checking to prevent negative or invalid values
+			const baseChance = 10;
+			const maxChance = 70;
+			const coinRange = 45; // (50 - 5)
+			const chanceRange = 60; // (70 - 10)
+			
+			const successChance = Math.min(Math.max(
+				baseChance + ((coinsToSpend - 5) * (chanceRange / coinRange)), 
+				baseChance
+			), maxChance);
 			
 			// Deduct coins
 			userData.bonkCoins -= coinsToSpend;
@@ -103,15 +112,23 @@ module.exports = {
 						const jailChannel = interaction.guild.channels.cache.get(userData.jailChannelId);
 						if (jailChannel) {
 							await jailChannel.send(`🔓 ${interaction.user} has successfully picked the lock and escaped! This channel will be deleted in 5 seconds. Freedom achieved! 🎉`);
+							const channelIdToDelete = userData.jailChannelId;
+							delete userData.jailChannelId;
+							
+							// Use a more reliable deletion method
 							setTimeout(async () => {
 								try {
-									await jailChannel.delete('User escaped via lock picking');
+									const channelToDelete = interaction.guild.channels.cache.get(channelIdToDelete);
+									if (channelToDelete) {
+										await channelToDelete.delete('User escaped via lock picking');
+									}
 								} catch (error) {
 									console.error('Error deleting jail channel:', error);
 								}
 							}, 5000);
+						} else {
+							delete userData.jailChannelId;
 						}
-						delete userData.jailChannelId;
 					}
 				}
 				
@@ -233,15 +250,22 @@ module.exports = {
 						if (jailChannel) {
 							const contributorNames = prisonerData.jailbreakContributors.map(c => c.username).join(', ');
 							await jailChannel.send(`🚨 **JAILBREAK SUCCESSFUL!** 🚨\n\n${prisoner} has been broken out by: **${contributorNames}**!\n\nThis channel will be deleted in 10 seconds. Viva la revolución! ✊`);
+							const channelIdToDelete = prisonerData.jailChannelId;
+							delete prisonerData.jailChannelId;
+							
 							setTimeout(async () => {
 								try {
-									await jailChannel.delete('User escaped via jailbreak');
+									const channelToDelete = interaction.guild.channels.cache.get(channelIdToDelete);
+									if (channelToDelete) {
+										await channelToDelete.delete('User escaped via jailbreak');
+									}
 								} catch (error) {
 									console.error('Error deleting jail channel:', error);
 								}
 							}, 10000);
+						} else {
+							delete prisonerData.jailChannelId;
 						}
-						delete prisonerData.jailChannelId;
 					}
 				}
 				
@@ -249,10 +273,13 @@ module.exports = {
 				delete prisonerData.originalRoles;
 				delete prisonerData.originalRolesDebug;
 				
-				// Store values before cleanup
-				const finalFund = prisonerData.jailbreakFund;
-				const contributorCount = prisonerData.jailbreakContributors.length;
+				// Store values before cleanup to prevent race conditions
+				const jailbreakData = {
+					finalFund: prisonerData.jailbreakFund || 0,
+					contributorCount: prisonerData.jailbreakContributors ? prisonerData.jailbreakContributors.length : 0
+				};
 				
+				// Clear the data immediately after storing
 				delete prisonerData.jailbreakFund;
 				delete prisonerData.jailbreakContributors;
 				
@@ -262,8 +289,8 @@ module.exports = {
 					.setTitle('🚨 JAILBREAK SUCCESSFUL! 🚨')
 					.setDescription(`**${prisoner.displayName}** has been broken out of jail!\n\n✊ **VIVA LA REVOLUCIÓN!** ✊`)
 					.addFields(
-						{ name: '💰 Total Fund Raised', value: `${finalFund} coins`, inline: true },
-						{ name: '👥 Contributors', value: `${contributorCount} heroes`, inline: true },
+						{ name: '💰 Total Fund Raised', value: `${jailbreakData.finalFund} coins`, inline: true },
+						{ name: '👥 Contributors', value: `${jailbreakData.contributorCount} heroes`, inline: true },
 						{ name: '🎯 Your Contribution', value: `${coinsToContribute} coins`, inline: true }
 					)
 					.setColor('#FFD700')
@@ -310,6 +337,9 @@ module.exports = {
 			// Calculate time reduction (every 10 messages = 2 minutes off)
 			const completedCycles = Math.floor(userData.goodBehavior.messagesInJail / 10);
 			const timeReductionMinutes = completedCycles * 2;
+			
+			// Ensure we don't display negative values
+			const safeTimeReduction = Math.max(0, timeReductionMinutes);
 			const timeReductionMs = timeReductionMinutes * 60 * 1000;
 
 			const embed = new EmbedBuilder()
@@ -317,7 +347,7 @@ module.exports = {
 				.setDescription(`**${interaction.user.displayName}**'s behavior while in jail:`)
 				.addFields(
 					{ name: '💬 Messages in Jail', value: `${userData.goodBehavior.messagesInJail}`, inline: true },
-					{ name: '⏰ Time Reduction Earned', value: `${timeReductionMinutes} minutes`, inline: true },
+					{ name: '⏰ Time Reduction Earned', value: `${safeTimeReduction} minutes`, inline: true },
 					{ name: '📊 Behavior Rating', value: getBehaviorRating(userData.goodBehavior.messagesInJail), inline: true }
 				)
 				.setColor('#4169E1')
