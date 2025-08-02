@@ -249,6 +249,24 @@ async function checkJailReleases(client) {
 										console.log(`⚠️ All original roles for ${member.user.tag} no longer exist, just removing jail role`);
 										await member.roles.remove(jailRole.id, 'Released from horny jail - original roles invalid');
 									}
+								} else if (user.originalRolesDebug && user.originalRolesDebug.length > 0) {
+									// Fallback: Use originalRolesDebug if originalRoles is empty
+									console.log(`[RESTORE] originalRoles is empty, falling back to originalRolesDebug for ${member.user.tag}`);
+									console.log(`[RESTORE] Role details from debug:`, user.originalRolesDebug);
+									
+									const roleIds = user.originalRolesDebug.map(roleInfo => roleInfo.id);
+									const validRoles = roleIds.filter(roleId => 
+										guild.roles.cache.has(roleId)
+									);
+									
+									if (validRoles.length > 0) {
+										console.log(`[RESTORE] Valid roles to restore from debug:`, validRoles);
+										await member.roles.set(validRoles, 'Released from horny jail - restoring from debug backup');
+										console.log(`✅ Restored ${validRoles.length} roles for ${member.user.tag} from debug backup`);
+									} else {
+										console.log(`⚠️ All debug roles for ${member.user.tag} no longer exist, just removing jail role`);
+										await member.roles.remove(jailRole.id, 'Released from horny jail - debug roles invalid');
+									}
 								} else {
 									// No original roles stored, just remove jail role
 									console.log(`[RESTORE] No original roles saved for ${member.user.tag}, just removing jail role`);
@@ -299,6 +317,27 @@ async function checkJailReleases(client) {
 									}
 								} catch (roleError) {
 									console.error(`❌ Error restoring roles for ${member.user.tag}:`, roleError.message);
+								}
+							} else if (user.originalRolesDebug && user.originalRolesDebug.length > 0) {
+								// Fallback: Use originalRolesDebug if originalRoles is empty
+								try {
+									console.log(`[RESTORE] originalRoles is empty, falling back to originalRolesDebug for ${member.user.tag}`);
+									console.log(`[RESTORE] Role details from debug:`, user.originalRolesDebug);
+									
+									const roleIds = user.originalRolesDebug.map(roleInfo => roleInfo.id);
+									const validRoles = roleIds.filter(roleId => 
+										guild.roles.cache.has(roleId)
+									);
+									
+									if (validRoles.length > 0) {
+										console.log(`[RESTORE] Valid roles to restore from debug:`, validRoles);
+										await member.roles.set(validRoles, 'Released from horny jail - restoring from debug backup');
+										console.log(`✅ Restored ${validRoles.length} roles for ${member.user.tag} from debug backup`);
+									} else {
+										console.log(`⚠️ All debug roles for ${member.user.tag} no longer exist`);
+									}
+								} catch (roleError) {
+									console.error(`❌ Error restoring roles from debug for ${member.user.tag}:`, roleError.message);
 								}
 							} else {
 								console.log(`ℹ️ No original roles to restore for ${member.user.tag}`);
