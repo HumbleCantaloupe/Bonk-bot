@@ -84,7 +84,7 @@ A Discord bot originally created for the chaotic **Muskulhige Hiya** server. Sen
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/AhmedViam/Bonk-bot.git
+   git clone https://github.com/HumbleCantaloupe/Bonk-bot.git
    cd Bonk-bot
    ```
 

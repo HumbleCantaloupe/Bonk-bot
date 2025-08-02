@@ -185,16 +185,16 @@ module.exports = {
 		}
 
 		// Create individual horny jail channel for this user
-		const jailChannelName = `horny-jail-${targetUser.username.toLowerCase().replace(/[^a-z0-9]/g, '')}-${targetUser.discriminator || Math.floor(Math.random() * 10000)}`;
+		const jailChannelName = `horny-jail-${target.username.toLowerCase().replace(/[^a-z0-9]/g, '')}-${target.discriminator || Math.floor(Math.random() * 10000)}`;
 		let jailChannel;
 		try {
 			jailChannel = await interaction.guild.channels.create({
 				name: jailChannelName,
 				type: 0,
-				topic: `🔒 ${targetUser.displayName}'s personal horny jail! You'll be released in ${interaction.client.config.jailSettings?.jailTimes?.mega || 15} minutes.`,
+				topic: `🔒 ${target.displayName}'s personal horny jail! You'll be released in ${interaction.client.config.jailSettings?.jailTimes?.mega || 15} minutes.`,
 				permissionOverwrites: [
 					{
-						id: targetUser.id,
+						id: target.id,
 						allow: ['ViewChannel', 'SendMessages', 'AddReactions'],
 						deny: ['CreatePublicThreads', 'CreatePrivateThreads']
 					},
