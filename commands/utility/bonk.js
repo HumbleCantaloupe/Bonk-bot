@@ -97,6 +97,21 @@ module.exports = {
 				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				
 				if (jailRole) {
+					// Save bonker's original roles before jailing them
+					const bonkerOriginalRoles = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => role.id);
+					
+					const bonkerOriginalRolesDebug = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => ({ id: role.id, name: role.name }));
+					
+					bonkerData.originalRoles = bonkerOriginalRoles;
+					bonkerData.originalRolesDebug = bonkerOriginalRolesDebug; // For debugging
+					
+					console.log(`[REFLECT] Saving ${bonkerOriginalRoles.length} original roles for ${bonkerMember.user.tag}:`, bonkerOriginalRoles);
+					console.log(`[REFLECT] Role details:`, bonkerOriginalRolesDebug);
+					
 					bonkerData.isInJail = true;
 					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000);
 					await bonkerMember.roles.set([jailRole.id], 'Bonk reflected back!');
@@ -125,6 +140,21 @@ module.exports = {
 			if (!bonkerData.isInJail) {
 				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				if (jailRole) {
+					// Save bonker's original roles before jailing them
+					const bonkerOriginalRoles = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => role.id);
+					
+					const bonkerOriginalRolesDebug = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => ({ id: role.id, name: role.name }));
+					
+					bonkerData.originalRoles = bonkerOriginalRoles;
+					bonkerData.originalRolesDebug = bonkerOriginalRolesDebug; // For debugging
+					
+					console.log(`[ROULETTE] Saving ${bonkerOriginalRoles.length} original roles for ${bonkerMember.user.tag}:`, bonkerOriginalRoles);
+					console.log(`[ROULETTE] Role details:`, bonkerOriginalRolesDebug);
+					
 					bonkerData.isInJail = true;
 					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000);
 					await bonkerMember.roles.set([jailRole.id], 'Bonk roulette backfire!');
@@ -188,12 +218,20 @@ module.exports = {
 			});
 		}
 
-		// Save their original roles
+		// Save their original roles with detailed info for debugging
 		const originalRoles = targetMember.roles.cache
 			.filter(role => role.id !== interaction.guild.roles.everyone.id)
 			.map(role => role.id);
 		
+		const originalRolesDebug = targetMember.roles.cache
+			.filter(role => role.id !== interaction.guild.roles.everyone.id)
+			.map(role => ({ id: role.id, name: role.name }));
+		
 		targetData.originalRoles = originalRoles;
+		targetData.originalRolesDebug = originalRolesDebug; // For debugging
+		
+		console.log(`Saving ${originalRoles.length} original roles for ${targetMember.user.tag}:`, originalRoles);
+		console.log(`Role details:`, originalRolesDebug);
 
 		// Jail them
 		try {

@@ -30,14 +30,26 @@ module.exports = {
 			});
 		}
 
-		const userData = interaction.client.getUserData;
+		const fs = require('fs');
+		let userData = {};
+		
+		// Load user data
+		try {
+			const data = fs.readFileSync('./data.json', 'utf8');
+			userData = JSON.parse(data);
+		} catch (error) {
+			return await interaction.editReply({
+				content: '❌ Error loading user data for panic release.'
+			});
+		}
+
 		let releasedCount = 0;
 		let channelsDeleted = 0;
 		let errors = [];
 
 		try {
 			// Find the jail role
-			const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+			const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 			
 			const embed = new EmbedBuilder()
 				.setTitle('🚨 PANIC MODE ACTIVATED 🚨')
@@ -51,8 +63,8 @@ module.exports = {
 			await interaction.editReply({ embeds: [embed] });
 
 			// Release all jailed users from data
-			for (const userId in interaction.client.userData || {}) {
-				const user = interaction.client.userData[userId];
+			for (const userId in userData) {
+				const user = userData[userId];
 				if (user && user.isInJail) {
 					try {
 						console.log(`Panic releasing user ${userId}`);
@@ -60,11 +72,25 @@ module.exports = {
 						user.jailEndTime = null;
 						releasedCount++;
 
-						// Try to find the member and remove jail role
+						// Try to find the member and restore roles properly
 						const member = await interaction.guild.members.fetch(userId).catch(() => null);
 						if (member && jailRole && member.roles.cache.has(jailRole.id)) {
-							await member.roles.remove(jailRole, 'Panic command - emergency release');
-							console.log(`Removed jail role from ${member.user.tag}`);
+							// Restore original roles if they exist
+							if (user.originalRoles && user.originalRoles.length > 0) {
+								const validRoles = user.originalRoles.filter(roleId => 
+									interaction.guild.roles.cache.has(roleId)
+								);
+								if (validRoles.length > 0) {
+									await member.roles.set(validRoles, 'Panic command - restoring original roles');
+									console.log(`Restored ${validRoles.length} roles for ${member.user.tag}`);
+								} else {
+									await member.roles.remove(jailRole, 'Panic command - emergency release');
+									console.log(`Removed jail role from ${member.user.tag} (no valid original roles)`);
+								}
+							} else {
+								await member.roles.remove(jailRole, 'Panic command - emergency release');
+								console.log(`Removed jail role from ${member.user.tag} (no original roles stored)`);
+							}
 						}
 
 						// Delete their jail channel if it exists
@@ -83,7 +109,7 @@ module.exports = {
 							delete user.jailChannelId;
 						}
 
-						// Clean up other jail-related data
+						// Clean up other jail-related data after successful role restoration
 						delete user.originalRoles;
 
 					} catch (error) {
@@ -158,6 +184,15 @@ module.exports = {
 			}
 
 			embed.setFooter({ text: `Executed by ${interaction.user.tag}` });
+
+			// Save all data changes
+			try {
+				fs.writeFileSync('./data.json', JSON.stringify(userData, null, 2));
+				console.log('✅ Panic command: Data saved successfully');
+			} catch (saveError) {
+				console.error('❌ Error saving data after panic command:', saveError);
+				errors.push('Failed to save user data changes');
+			}
 
 			await interaction.editReply({ embeds: [embed] });
 

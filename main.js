@@ -50,6 +50,10 @@ client.config = botConfig; // Make config available to all commands
 const dataPath = path.join(__dirname, 'data.json');
 let userData = {};
 
+// Throttle system for orphaned role cleanup to prevent spam
+const orphanedRoleCleanupCooldown = new Map(); // userId -> lastCleanupTime
+const CLEANUP_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes between cleanup attempts per user
+
 // Load saved data
 if (fs.existsSync(dataPath)) {
 	try {
@@ -181,7 +185,8 @@ async function checkJailReleases(client) {
 	
 	let jailedUsers = 0;
 	let releasedUsers = 0;
-	
+
+	// First pass: Release users whose jail time has expired
 	for (const userId in userData) {
 		const user = userData[userId];
 		if (user.isInJail) {
@@ -194,42 +199,110 @@ async function checkJailReleases(client) {
 				user.jailEndTime = null;
 				releasedUsers++;
 				
+				// Try to find the user in any guild
 				for (const [guildId, guild] of client.guilds.cache) {
-				try {
-					const member = await guild.members.fetch(userId).catch(() => null);
-					if (!member) {
-						// User left the server, clean up their jail channel
-						if (user.jailChannelId) {
-							try {
-								const jailChannel = guild.channels.cache.get(user.jailChannelId);
-								if (jailChannel) {
-									await jailChannel.delete('User left server while in jail');
-									console.log(`Deleted abandoned jail channel for user ${userId}`);
-								}
-								delete user.jailChannelId;
-							} catch (deleteError) {
-								console.error(`Error cleaning up abandoned jail channel:`, deleteError);
-								delete user.jailChannelId;
-							}
+					try {
+						const member = await guild.members.fetch(userId).catch(() => null);
+						if (!member) {
+							console.log(`User ${userId} not found in guild ${guild.name}, checking next guild...`);
+							continue;
 						}
-						continue;
-					}
-					const jailRoleName = client.config.jailSettings?.roleName || 'Horny Jail';
-					const jailRole = guild.roles.cache.find(role => role.name === jailRoleName);
-					
-					if (member.roles.cache.has(jailRole?.id)) {
-						try {
-							// Restore original roles if they exist
-							if (user.originalRoles && user.originalRoles.length > 0) {
-								await member.roles.set(user.originalRoles, 'Released from horny jail - restoring original roles');
-								console.log(`Released ${member.user.tag} from horny jail and restored ${user.originalRoles.length} original roles`);
-							} else {
-								// No original roles stored, just remove jail role
-								await member.roles.remove(jailRole.id, 'Released from horny jail');
-								console.log(`Released ${member.user.tag} from horny jail`);
+						
+						console.log(`Found user ${member.user.tag} in guild ${guild.name}, proceeding with release...`);
+						const jailRoleName = client.config.jailSettings?.roleName || 'Horny Jail';
+						const jailRole = guild.roles.cache.find(role => role.name === jailRoleName);
+						
+						if (!jailRole) {
+							console.error(`Jail role "${jailRoleName}" not found in guild ${guild.name}`);
+							continue;
+						}
+						
+						// Check if user actually has the jail role
+						if (member.roles.cache.has(jailRole.id)) {
+							try {
+								// Restore original roles if they exist
+								if (user.originalRoles && user.originalRoles.length > 0) {
+									console.log(`[RESTORE] Attempting to restore roles for ${member.user.tag}:`);
+									console.log(`[RESTORE] Original roles saved:`, user.originalRoles);
+									if (user.originalRolesDebug) {
+										console.log(`[RESTORE] Role details:`, user.originalRolesDebug);
+									}
+									
+									// Validate that the roles still exist in the server
+									const validRoles = user.originalRoles.filter(roleId => 
+										guild.roles.cache.has(roleId)
+									);
+									
+									const invalidRoles = user.originalRoles.filter(roleId => 
+										!guild.roles.cache.has(roleId)
+									);
+									
+									if (invalidRoles.length > 0) {
+										console.log(`[RESTORE] Invalid roles (no longer exist):`, invalidRoles);
+									}
+									
+									if (validRoles.length > 0) {
+										console.log(`[RESTORE] Valid roles to restore:`, validRoles);
+										await member.roles.set(validRoles, 'Released from horny jail - restoring original roles');
+										console.log(`✅ Released ${member.user.tag} from horny jail and restored ${validRoles.length}/${user.originalRoles.length} original roles`);
+									} else {
+										console.log(`⚠️ All original roles for ${member.user.tag} no longer exist, just removing jail role`);
+										await member.roles.remove(jailRole.id, 'Released from horny jail - original roles invalid');
+									}
+								} else {
+									// No original roles stored, just remove jail role
+									console.log(`[RESTORE] No original roles saved for ${member.user.tag}, just removing jail role`);
+									await member.roles.remove(jailRole.id, 'Released from horny jail');
+									console.log(`✅ Released ${member.user.tag} from horny jail (no original roles to restore)`);
+								}
+							} catch (roleError) {
+								console.error(`❌ Error restoring roles for ${member.user.tag}:`, roleError.message);
+								// Try to at least remove the jail role
+								try {
+									await member.roles.remove(jailRole.id, 'Jail release - role restore failed');
+									console.log(`⚠️ Removed jail role for ${member.user.tag} after role restore failure`);
+								} catch (removeError) {
+									console.error(`❌ Failed to remove jail role:`, removeError.message);
+								}
 							}
-						} catch (roleError) {
-							console.error(`Error restoring roles for ${member.user.tag}:`, roleError.message);
+						} else {
+							console.log(`⚠️ User ${member.user.tag} doesn't have jail role, but marked as jailed - restoring original roles anyway`);
+							
+							// Still try to restore original roles even if jail role is missing
+							if (user.originalRoles && user.originalRoles.length > 0) {
+								try {
+									console.log(`[RESTORE] Jail role missing, but restoring original roles for ${member.user.tag}:`);
+									console.log(`[RESTORE] Original roles saved:`, user.originalRoles);
+									if (user.originalRolesDebug) {
+										console.log(`[RESTORE] Role details:`, user.originalRolesDebug);
+									}
+									
+									// Validate that the roles still exist in the server
+									const validRoles = user.originalRoles.filter(roleId => 
+										guild.roles.cache.has(roleId)
+									);
+									
+									const invalidRoles = user.originalRoles.filter(roleId => 
+										!guild.roles.cache.has(roleId)
+									);
+									
+									if (invalidRoles.length > 0) {
+										console.log(`[RESTORE] Invalid roles (no longer exist):`, invalidRoles);
+									}
+									
+									if (validRoles.length > 0) {
+										console.log(`[RESTORE] Valid roles to restore:`, validRoles);
+										await member.roles.set(validRoles, 'Released from horny jail - restoring original roles (jail role was missing)');
+										console.log(`✅ Restored ${validRoles.length}/${user.originalRoles.length} original roles for ${member.user.tag} (jail role was already removed)`);
+									} else {
+										console.log(`⚠️ All original roles for ${member.user.tag} no longer exist, no roles to restore`);
+									}
+								} catch (roleError) {
+									console.error(`❌ Error restoring roles for ${member.user.tag}:`, roleError.message);
+								}
+							} else {
+								console.log(`ℹ️ No original roles to restore for ${member.user.tag}`);
+							}
 						}
 						
 						// Delete their jail channel
@@ -237,6 +310,7 @@ async function checkJailReleases(client) {
 							try {
 								const jailChannel = guild.channels.cache.get(user.jailChannelId);
 								if (jailChannel) {
+									console.log(`Deleting jail channel for ${member.user.tag}...`);
 									await jailChannel.send(`🔓 ${member} has been released from horny jail! This channel will be deleted in 5 seconds. Welcome back to freedom! 🎉`);
 									const channelIdToDelete = user.jailChannelId; // Store before deleting from userData
 									delete user.jailChannelId; // Clean up userData first
@@ -245,36 +319,107 @@ async function checkJailReleases(client) {
 											const channelToDelete = guild.channels.cache.get(channelIdToDelete);
 											if (channelToDelete) {
 												await channelToDelete.delete('User released from horny jail');
-												console.log(`Deleted individual jail channel for ${member.user.tag}`);
+												console.log(`✅ Deleted individual jail channel for ${member.user.tag}`);
 											}
 										} catch (deleteError) {
-											console.error(`Error deleting jail channel:`, deleteError);
+											console.error(`❌ Error deleting jail channel:`, deleteError.message);
 										}
 									}, 5000);
 								} else {
+									console.log(`⚠️ Jail channel ${user.jailChannelId} not found, cleaning up data...`);
 									delete user.jailChannelId; // Channel doesn't exist, clean up
 								}
 							} catch (error) {
-								console.error(`Error handling jail channel cleanup:`, error);
+								console.error(`❌ Error handling jail channel cleanup:`, error.message);
 								delete user.jailChannelId; // Clean up on error
 							}
 						}
+						
+						// Clean up original roles data
+						delete user.originalRoles;
+						delete user.originalRolesDebug;
+						break; // Found and processed user, no need to check other guilds
+						
+					} catch (error) {
+						console.error(`❌ Error releasing user ${userId} in guild ${guild.name}:`, error.message);
+						continue;
 					}
-				} catch (error) {
-					console.error(`Error releasing user ${userId}:`, error);
 				}
 			}
+		}
+	}
+
+	// Second pass: Safety check for users with jail role but not marked as jailed (data corruption fix)
+	for (const [guildId, guild] of client.guilds.cache) {
+		try {
+			const jailRoleName = client.config.jailSettings?.roleName || 'Horny Jail';
+			const jailRole = guild.roles.cache.find(role => role.name === jailRoleName);
 			
-			delete user.originalRoles;
+			if (jailRole) {
+				const membersWithJailRole = guild.members.cache.filter(member => {
+					const hasJailRole = member.roles.cache.has(jailRole.id);
+					const isMarkedJailed = userData[member.id]?.isInJail;
+					const lastCleanup = orphanedRoleCleanupCooldown.get(member.id) || 0;
+					const cooldownExpired = (Date.now() - lastCleanup) > CLEANUP_COOLDOWN_MS;
+					
+					return hasJailRole && !isMarkedJailed && cooldownExpired;
+				});
+				
+				if (membersWithJailRole.size > 0) {
+					console.log(`🔍 Found ${membersWithJailRole.size} users with jail role but not marked as jailed - fixing data corruption...`);
+					
+					for (const [memberId, member] of membersWithJailRole) {
+						try {
+							console.log(`🔧 Attempting to remove jail role from ${member.user.tag} (ID: ${memberId})`);
+							console.log(`   - Current roles: ${member.roles.cache.map(r => r.name).join(', ')}`);
+							console.log(`   - Has jail role: ${member.roles.cache.has(jailRole.id)}`);
+							console.log(`   - Data state: isInJail=${userData[memberId]?.isInJail}, jailEndTime=${userData[memberId]?.jailEndTime}`);
+							
+							// Set cooldown for this user
+							orphanedRoleCleanupCooldown.set(memberId, Date.now());
+							
+							// Force refresh member data from Discord
+							await member.fetch();
+							
+							if (member.roles.cache.has(jailRole.id)) {
+								await member.roles.remove(jailRole.id, 'Auto-cleanup - removing orphaned jail role');
+								console.log(`✅ Successfully removed jail role from ${member.user.tag}`);
+								
+								// Verify removal after a short delay
+								await new Promise(resolve => setTimeout(resolve, 1000));
+								await member.fetch();
+								if (member.roles.cache.has(jailRole.id)) {
+									console.log(`⚠️ WARNING: Role still present after removal for ${member.user.tag}`);
+								} else {
+									console.log(`✅ Verified: Role successfully removed for ${member.user.tag}`);
+								}
+							} else {
+								console.log(`ℹ️ User ${member.user.tag} no longer has jail role (cached data outdated)`);
+							}
+							
+							// Clean up any leftover jail data
+							if (userData[memberId]) {
+								userData[memberId].isInJail = false;
+								userData[memberId].jailEndTime = null;
+								delete userData[memberId].jailChannelId;
+								delete userData[memberId].originalRoles;
+								console.log(`🧹 Cleaned up jail data for ${member.user.tag}`);
+							}
+						} catch (error) {
+							console.error(`❌ Error removing orphaned jail role from ${member.user.tag}:`, error.message);
+							console.error(`   Full error:`, error);
+						}
+					}
+				}
 			}
+		} catch (error) {
+			console.error(`❌ Error in safety check for guild ${guild.name}:`, error.message);
 		}
 	}
 	
 	console.log(`Jail check complete. Found ${jailedUsers} jailed users, released ${releasedUsers} users`);
 	saveData();
-}
-
-// Emergency function to release everyone
+}// Emergency function to release everyone
 async function forceReleaseAll(client) {
 	console.log('🚨 FORCE RELEASING ALL JAILED USERS 🚨');
 	let releasedCount = 0;
@@ -291,7 +436,7 @@ async function forceReleaseAll(client) {
 				try {
 					const member = await guild.members.fetch(userId).catch(() => null);
 					if (member) {
-						const jailRole = guild.roles.cache.find(role => role.name === 'Horny Jail');
+						const jailRole = guild.roles.cache.find(role => role.name === client.config.jailSettings?.roleName || 'Horny Jail');
 						
 						if (jailRole && member.roles.cache.has(jailRole.id)) {
 							await member.roles.remove(jailRole, 'Force released from jail');

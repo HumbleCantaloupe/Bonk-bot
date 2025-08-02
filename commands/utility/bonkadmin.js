@@ -18,7 +18,7 @@
  * @permissions Administrator (required for access)
  */
 
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -72,7 +72,7 @@ module.exports = {
 			// Restore roles
 			try {
 				const member = await interaction.guild.members.fetch(user.id);
-				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				
 				if (member.roles.cache.has(jailRole?.id)) {
 					// Restore original roles

@@ -18,11 +18,12 @@
  */
 
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const fs = require('fs');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('bonksoft')
-		.setDescription('Soft bonk a user with a gentle 2-minute timeout')
+		.setDescription('Soft bonk a user with a gentle timeout')
 		.addUserOption(option =>
 			option.setName('target')
 				.setDescription('The user to soft bonk')
@@ -95,9 +96,15 @@ module.exports = {
 			// The soft bonk bounces back to the bonker
 			if (!bonkerData.isInJail) {
 				const bonkerMember = await interaction.guild.members.fetch(bonker.id);
-				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				
 				if (jailRole) {
+					// Save bonker's original roles before jailing them
+					const bonkerOriginalRoles = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => role.id);
+					bonkerData.originalRoles = bonkerOriginalRoles;
+					
 					bonkerData.isInJail = true;
 					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000);
 					await bonkerMember.roles.set([jailRole.id], 'Soft bonk reflected back!');
@@ -124,12 +131,13 @@ module.exports = {
 		}
 
 		// Find or create horny jail role and channel
-		let jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+		const jailRoleName = interaction.client.config.jailSettings?.roleName || 'Horny Jail';
+		let jailRole = interaction.guild.roles.cache.find(role => role.name === jailRoleName);
 		if (!jailRole) {
 			try {
 				jailRole = await interaction.guild.roles.create({
-					name: 'Horny Jail',
-					color: '#FF69B4',
+					name: jailRoleName,
+					color: interaction.client.config.jailSettings?.roleColor || '#FF69B4',
 					reason: 'Role for users in horny jail'
 				});
 			} catch (error) {
@@ -147,7 +155,7 @@ module.exports = {
 			jailChannel = await interaction.guild.channels.create({
 				name: jailChannelName,
 				type: 0,
-				topic: `🔒 ${target.displayName}'s personal horny jail! You'll be released in 5 minutes.`,
+				topic: `🔒 ${target.displayName}'s personal horny jail! You'll be released in ${interaction.client.config.jailSettings?.jailTimes?.soft || 1} minutes.`,
 				permissionOverwrites: [
 					{
 						id: target.id,
@@ -168,12 +176,24 @@ module.exports = {
 			});
 		}
 
-		// Store user's original roles
+		// Store user's original roles with detailed info for debugging
 		const originalRoles = targetMember.roles.cache
 			.filter(role => role.id !== interaction.guild.roles.everyone.id)
 			.map(role => role.id);
 		
+		const originalRolesDebug = targetMember.roles.cache
+			.filter(role => role.id !== interaction.guild.roles.everyone.id)
+			.map(role => ({ id: role.id, name: role.name }));
+		
+		console.log(`Saving ${originalRoles.length} original roles for ${targetMember.user.tag}:`, originalRoles);
+		console.log(`Role details:`, originalRolesDebug);
 		targetData.originalRoles = originalRoles;
+		targetData.originalRolesDebug = originalRolesDebug; // For debugging
+		
+		// Save data immediately to ensure originalRoles are persisted
+		if (interaction.client.saveData) {
+			interaction.client.saveData();
+		}
 
 		// Remove all roles and add jail role
 		try {
@@ -219,7 +239,7 @@ module.exports = {
 		// Deduct bonk credit
 		bonkerData.bonkCoins--;
 		
-		// Set jail status (5 minutes for soft bonk)
+		// Set jail status (configured soft time for soft bonk)
 		const jailTime = (interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000;
 		targetData.isInJail = true;
 		targetData.jailEndTime = Date.now() + jailTime;
@@ -229,11 +249,12 @@ module.exports = {
 		interaction.client.saveData();
 
 		// Create soft bonk embed
+		const jailMinutes = Math.floor(jailTime / (60 * 1000));
 		const bonkEmbed = new EmbedBuilder()
 			.setTitle('🥺 Soft Bonk 🥺')
 			.setDescription(`${target} has been gently bonked by ${bonker}`)
 			.addFields(
-				{ name: '💖 Gentle Sentence', value: 'Sent to horny jail for 5 minutes', inline: true },
+				{ name: '💖 Gentle Sentence', value: `Sent to horny jail for ${jailMinutes} minute${jailMinutes !== 1 ? 's' : ''}`, inline: true },
 				{ name: '🪙 Remaining Coins', value: `${bonkerData.bonkCoins}`, inline: true }
 			)
 			.setColor('#FFB6C1')
@@ -242,11 +263,16 @@ module.exports = {
 
 		await interaction.reply({ embeds: [bonkEmbed] });
 
+		// Save all data changes
+		if (interaction.client.saveData) {
+			interaction.client.saveData();
+		}
+
 		// Send follow-up
 		setTimeout(async () => {
 			try {
 				await interaction.followUp({
-					content: `🥺 ${target} has been gently sent to ${jailChannel} for a short 2-minute timeout. Be nice! 💕`,
+					content: `🥺 ${target} has been gently sent to ${jailChannel} for a short ${jailMinutes}-minute timeout. Be nice! 💕`,
 					ephemeral: false
 				});
 			} catch (error) {

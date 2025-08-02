@@ -1,6 +1,6 @@
 /**
  * @file bonkmega.js
- * @description Mega bonk command - sends users to jail for 15 minutes with enhanced effects
+ * @description Mega bonk command - sends users to jail for configured mega time with enhanced effects
  * @author Marrow
  * @created 2024-07-31
  * @lastModified 2024-08-01
@@ -21,7 +21,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('bonkmega')
-		.setDescription('Mega bonk a user and send them to horny jail for 15 minutes!')
+		.setDescription('Mega bonk a user and send them to horny jail for extended time!')
 		.addUserOption(option =>
 			option.setName('target')
 				.setDescription('The user to mega bonk')
@@ -110,9 +110,15 @@ module.exports = {
 			// The mega bonk bounces back to the bonker
 			if (!bonkerData.isInJail) {
 				const bonkerMember = await interaction.guild.members.fetch(bonker.id);
-				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				
 				if (jailRole) {
+					// Save bonker's original roles before jailing them
+					const bonkerOriginalRoles = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => role.id);
+					bonkerData.originalRoles = bonkerOriginalRoles;
+					
 					bonkerData.isInJail = true;
 					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.mega || 15) * 60 * 1000);
 					await bonkerMember.roles.set([jailRole.id], 'Mega bonk reflected back!');
@@ -124,8 +130,9 @@ module.exports = {
 			bonkerData.totalBonksGiven++; // But it backfired
 			interaction.client.saveData();
 			
+			const megaJailMinutes = interaction.client.config.jailSettings?.jailTimes?.mega || 15;
 			return await interaction.reply({ 
-				content: `🪞 **MEGA BONK REFLECTED!** 🪞\n${target.displayName}'s mirror deflected the MEGA bonk back at ${bonker}! The bonker gets the full 15-minute sentence!`,
+				content: `🪞 **MEGA BONK REFLECTED!** 🪞\n${target.displayName}'s mirror deflected the MEGA bonk back at ${bonker}! The bonker gets the full ${megaJailMinutes}-minute sentence!`,
 				ephemeral: false
 			});
 		}
@@ -136,10 +143,16 @@ module.exports = {
 			const bonkerMember = await interaction.guild.members.fetch(bonker.id);
 			if (!interaction.client.getUserData(bonker.id).isInJail) {
 				// Apply jail to bonker instead
-				const jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+				const jailRole = interaction.guild.roles.cache.find(role => role.name === interaction.client.config.jailSettings?.roleName || 'Horny Jail');
 				if (jailRole) {
+					// Save bonker's original roles before jailing them
+					const bonkerOriginalRoles = bonkerMember.roles.cache
+						.filter(role => role.id !== interaction.guild.roles.everyone.id)
+						.map(role => role.id);
+					bonkerData.originalRoles = bonkerOriginalRoles;
+					
 					bonkerData.isInJail = true;
-					bonkerData.jailEndTime = Date.now() + (5 * 60 * 1000); // 5 minutes for self-bonk
+					bonkerData.jailEndTime = Date.now() + ((interaction.client.config.jailSettings?.jailTimes?.soft || 5) * 60 * 1000); // Use soft bonk time for self-bonk
 					await bonkerMember.roles.set([jailRole.id], 'Bonk roulette backfire!');
 				}
 			}
@@ -154,12 +167,13 @@ module.exports = {
 		}
 
 		// Find or create horny jail role and channel (same logic as regular bonk)
-		let jailRole = interaction.guild.roles.cache.find(role => role.name === 'Horny Jail');
+		const jailRoleName = interaction.client.config.jailSettings?.roleName || 'Horny Jail';
+		let jailRole = interaction.guild.roles.cache.find(role => role.name === jailRoleName);
 		if (!jailRole) {
 			try {
 				jailRole = await interaction.guild.roles.create({
-					name: 'Horny Jail',
-					color: '#FF69B4',
+					name: jailRoleName,
+					color: interaction.client.config.jailSettings?.roleColor || '#FF69B4',
 					reason: 'Role for users in horny jail'
 				});
 			} catch (error) {
@@ -177,7 +191,7 @@ module.exports = {
 			jailChannel = await interaction.guild.channels.create({
 				name: jailChannelName,
 				type: 0,
-				topic: `🔒 ${targetUser.displayName}'s personal horny jail! You'll be released in 15 minutes.`,
+				topic: `🔒 ${targetUser.displayName}'s personal horny jail! You'll be released in ${interaction.client.config.jailSettings?.jailTimes?.mega || 15} minutes.`,
 				permissionOverwrites: [
 					{
 						id: targetUser.id,
@@ -198,12 +212,19 @@ module.exports = {
 			});
 		}
 
-		// Store user's original roles
+		// Store user's original roles with detailed info for debugging
 		const originalRoles = targetMember.roles.cache
 			.filter(role => role.id !== interaction.guild.roles.everyone.id)
 			.map(role => role.id);
 		
+		const originalRolesDebug = targetMember.roles.cache
+			.filter(role => role.id !== interaction.guild.roles.everyone.id)
+			.map(role => ({ id: role.id, name: role.name }));
+		
+		console.log(`Saving ${originalRoles.length} original roles for ${targetMember.user.tag}:`, originalRoles);
+		console.log(`Role details:`, originalRolesDebug);
 		targetData.originalRoles = originalRoles;
+		targetData.originalRolesDebug = originalRolesDebug; // For debugging
 
 		// Remove all roles and add jail role
 		try {
@@ -249,7 +270,7 @@ module.exports = {
 		// Deduct bonk coins (mega bonk costs 2)
 		bonkerData.bonkCoins -= 2;
 		
-		// Set jail status (15 minutes for mega bonk)
+		// Set jail status (configured mega time for mega bonk)
 		const jailTime = (interaction.client.config.jailSettings?.jailTimes?.mega || 15) * 60 * 1000;
 		targetData.isInJail = true;
 		targetData.jailEndTime = Date.now() + jailTime;
@@ -264,11 +285,12 @@ module.exports = {
 		interaction.client.saveData();
 
 		// Create mega bonk embed
+		const jailMinutes = Math.floor(jailTime / (60 * 1000));
 		const bonkEmbed = new EmbedBuilder()
 			.setTitle('💥 MEGA BONK! 💥')
 			.setDescription(`${target} has been **MEGA BONKED** by ${bonker}!`)
 			.addFields(
-				{ name: '⚡ Sentence', value: 'Sent to horny jail for **15 MINUTES**!', inline: true },
+				{ name: '⚡ Sentence', value: `Sent to horny jail for **${jailMinutes} MINUTES**!`, inline: true },
 				{ name: '🪙 Remaining Coins', value: `${bonkerData.bonkCoins}`, inline: true },
 				{ name: '🔥 Bonk Streak', value: `${bonkerData.bonkStreak}`, inline: true }
 			)
@@ -282,7 +304,7 @@ module.exports = {
 		setTimeout(async () => {
 			try {
 				await interaction.followUp({
-					content: `💥 ${target} has been **MEGA BONKED** and sent to ${jailChannel}! They're in for **15 MINUTES** of hard time! 💥`,
+					content: `💥 ${target} has been **MEGA BONKED** and sent to ${jailChannel}! They're in for **${jailMinutes} MINUTES** of hard time! 💥`,
 					ephemeral: false
 				});
 			} catch (error) {

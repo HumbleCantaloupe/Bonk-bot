@@ -10,7 +10,7 @@
     "roleColor": "#FF69B4",
     "channelPrefix": "horny-jail-",
     "jailTimes": {
-      "soft": 5,
+      "soft": 1,
       "regular": 10,
       "mega": 15
     },

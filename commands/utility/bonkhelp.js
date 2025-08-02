@@ -3,10 +3,11 @@
  * @description Help command providing comprehensive guide to the bonk system
  * @author Marrow
  * @created 2024-07-31
- * @lastModified 2024-08-01
- * @version 1.4.0
+ * @lastModified 2024-08-02
+ * @version 2.0.0
  * 
  * @changelog
+ * - 2.0.0 (2024-08-02): Major update with Bonk Reflect, updated daily rewards (8-20 coins), comprehensive admin commands, enhanced shop descriptions
  * - 1.4.0 (2024-08-01): Updated with shop system, new jail times, admin protection info
  * - 1.3.0 (2024-07-31): Revised for individual jail system and coin economy
  * - 1.2.0 (2024-07-31): Added special events and immunity information
@@ -24,18 +25,21 @@ module.exports = {
 		.setName('bonkhelp')
 		.setDescription('Learn about the bonk system'),
 	async execute(interaction) {
+		const config = interaction.client.config;
+		const jailTimes = config.jailSettings.jailTimes;
+		
 		const embed = new EmbedBuilder()
 			.setTitle('🔨 Bonk System Guide')
 			.setDescription('Welcome to the Bonk Bot! Here\'s how it works:')
 			.addFields(
 				{
 					name: '🪙 Daily Coins',
-					value: 'Get 3-6 bonk coins daily with `/bonkclaim`.\nCoins accumulate over time and never reset.\nUse `/bonkbalance` to check your current coins.',
+					value: 'Get 8-20 bonk coins daily with `/bonkclaim` (streak bonuses!).\nCoins accumulate over time and never reset.\nUse `/bonkbalance` to check your current coins.',
 					inline: false
 				},
 				{
 					name: '🔨 Bonking Users',
-					value: 'Use `/bonk @user` to bonk someone and send them to their own jail!\nCosts 1 coin and creates a personal jail channel for 10 minutes.',
+					value: `Use \`/bonk @user\` to bonk someone and send them to their own jail!\nCosts 1 coin and creates a personal jail channel for ${jailTimes.regular} ${jailTimes.regular === 1 ? 'minute' : 'minutes'}.`,
 					inline: false
 				},
 				{
@@ -45,12 +49,12 @@ module.exports = {
 				},
 				{
 					name: '📋 Commands',
-					value: '`/bonk @user` - Bonk a user (10 min jail, 1 coin)\n`/bonkmega @user` - Mega bonk (15 min jail, 2 coins)\n`/bonksoft @user` - Soft bonk (5 min jail, 1 coin)\n`/bonkbalance [user]` - Check bonk coins\n`/bonkclaim` - Daily coin claim\n`/bonkgamble <amount>` - Gamble coins\n`/bonkgift @user <amount>` - Gift coins\n`/bonkshop` - Browse, buy, and use power-ups\n`/bonkstats [user]` - View stats\n`/bonkpanic` - 🚨 Emergency: Release all jailed users (Admin only)\n`/bonkhelp` - This help message',
+					value: `**Core Commands:**\n\`/bonk @user\` - Bonk a user (${jailTimes.regular} min jail, 1 coin)\n\`/bonkmega @user\` - Mega bonk (${jailTimes.mega} min jail, 2 coins)\n\`/bonksoft @user\` - Soft bonk (${jailTimes.soft} min jail, 1 coin)\n\n**Economy Commands:**\n\`/bonkclaim\` - Daily coin claim (8-20 coins)\n\`/bonkbalance [user]\` - Check bonk coins\n\`/bonkgamble <amount>\` - Gamble coins\n\`/bonkgift @user <amount>\` - Gift coins\n\n**Shop Commands:**\n\`/bonkshop browse\` - View all power-ups\n\`/bonkshop buy <item>\` - Purchase power-ups\n\`/bonkshop inventory\` - Check your items\n\`/bonkshop use <item>\` - Activate power-ups\n\n**Info Commands:**\n\`/bonkstats [user]\` - View detailed statistics\n\`/bonkhelp\` - This help message\n\n**Admin Commands:**\n\`/bonkadmin\` - Admin management tools\n\`/bonkevents\` - Special event controls\n\`/bonkpanic\` - 🚨 Emergency: Release all jailed users`,
 					inline: false
 				},
 				{
 					name: '🏪 Shop & Power-ups',
-					value: '• **🛡️ Shield** - Block next bonk (25 coins)\n• **🌟 Immunity** - 1-hour protection (50 coins)\n• **💰 Double Coins** - 24h claim boost (30 coins)\n• **🗝️ Parole Pass** - Half next sentence (40 coins)\n• **⚡ Bonk Boost** - Double next jail time (35 coins)\n• **🍀 Lucky Charm** - Better gambling odds (45 coins)',
+					value: '• **🛡️ Bonk Shield** - Block next bonk (25 coins)\n• **🌟 1-Hour Immunity** - Cannot be bonked for 1 hour (50 coins)\n• **💰 Double Coin Boost** - Earn double coins for 24h (30 coins)\n• **🗝️ Parole Pass** - Next jail sentence reduced by 50% (40 coins)\n• **⚡ Bonk Power Boost** - Next bonk jails target for double time (35 coins)\n• **🍀 Lucky Charm** - Next gamble has +20% better odds (45 coins)\n• **↩️ Bonk Reflect** - Next bonk bounces back to attacker (55 coins)',
 					inline: false
 				},
 				{
